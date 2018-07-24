@@ -28,19 +28,16 @@ class ProxyObject implements InvocationHandler, Serializable {
 	}
 	
 	final Class<? extends ProxyInterface> proxyInterface;
-	private transient ProxyTemplate template;
 	
 	private final TreeMap<String, Object> fields = new TreeMap<>();
 		
 	ProxyObject(Class<? extends ProxyInterface> proxyInterface) {
 		this.proxyInterface = proxyInterface;
-		this.template = ProxyInterfaceCache.validateProxyInterface(proxyInterface);
 	}
 	
 	// Deserialize
 	private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
 		in.defaultReadObject();
-		this.template = ProxyInterfaceCache.validateProxyInterface(proxyInterface);
 	}
 	
 	void putObjectFromDatatypeConverterInternal(String name, Object obj) {
@@ -51,12 +48,20 @@ class ProxyObject implements InvocationHandler, Serializable {
 		return fields.get(name);
 	}
 	
+	private transient ProxyTemplate cachedTemplate = null;
+	ProxyTemplate getTemplate() {
+		if (cachedTemplate == null) {
+			cachedTemplate = ProxyInterfaceCache.validateProxyInterface(proxyInterface);
+		}
+		return cachedTemplate;
+	}
+	
 	ProxyDatatype getDatatypeFromDatatypeConverterInternal(String name) {
-		return template.datatypes.get(name);
+		return getTemplate().datatypes.get(name);
 	}
 	
 	Collection<String> templateKeys() {
-		return template.datatypes.keySet();
+		return getTemplate().datatypes.keySet();
 	}
 	
 	@Override
@@ -68,10 +73,10 @@ class ProxyObject implements InvocationHandler, Serializable {
 		final Object gott;
 		
 		if (m.isDefault()) {
-			return template.defaults.get(m.toGenericString())
+			return getTemplate().defaults.get(m.toGenericString())
 					.bindTo(proxy)
 					.invokeWithArguments(args);
-		} else if ((setter = template.setters.get(m.toGenericString())) != null && setter.size() == args.length) {
+		} else if ((setter = getTemplate().setters.get(m.toGenericString())) != null && setter.size() == args.length) {
 			for (int i = 0; i < args.length; i++) {
 				fields.put(setter.get(i), args[i]);
 			}

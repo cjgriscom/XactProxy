@@ -122,11 +122,13 @@ final class ProxyTemplate {
 		// Add superinterface setters and fields
 		for (Class<?> c : proxyInterface.getInterfaces()) {
 			if (ProxyInterfaceCache.hasCachedProxyInterface(c)) {
+				// TODO is there any redundant work here?
 				ProxyTemplate subtemplate = ProxyInterfaceCache.validateProxyInterface(c);
 				datatypes.putAll(subtemplate.datatypes);
 				setters.putAll(subtemplate.setters);
 				references.add(c);
 				references.addAll(subtemplate.references);
+				defaults.putAll(subtemplate.defaults);
 			}
 		}
 		
