@@ -41,7 +41,7 @@ final class ProxyTemplate {
 			if (Modifier.isStatic(meth.getModifiers()) // Ignore interface static methods
 					|| meth.isDefault()) continue; // Ignore interface default methods
 			
-			if (meth.getReturnType() == void.class) {
+			if (meth.getReturnType() == void.class || meth.getReturnType() == proxyInterface) {
 				// Setter
 				if (meth.getParameterCount() == 0) 
 					throw new IllegalArgumentException("ProxyInterface setter " + 
