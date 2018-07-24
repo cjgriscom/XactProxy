@@ -67,7 +67,11 @@ class ProxyObject implements InvocationHandler, Serializable {
 		final ArrayList<String> setter;
 		final Object gott;
 		
-		if ((setter = template.setters.get(m.toGenericString())) != null && setter.size() == args.length) {
+		if (m.isDefault()) {
+			return template.defaults.get(m.toGenericString())
+					.bindTo(proxy)
+					.invokeWithArguments(args);
+		} else if ((setter = template.setters.get(m.toGenericString())) != null && setter.size() == args.length) {
 			for (int i = 0; i < args.length; i++) {
 				fields.put(setter.get(i), args[i]);
 			}

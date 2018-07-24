@@ -1,5 +1,9 @@
 package com.xactmetal.abstraction.proxy;
 
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodHandles.Lookup;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
@@ -12,6 +16,19 @@ import java.util.TreeSet;
 import com.xactmetal.abstraction.proxy.ProxyDatatype.Base;
 
 final class ProxyTemplate {
+	
+	static final Constructor<MethodHandles.Lookup> lookupPrivConst;
+	static {
+		try {
+			lookupPrivConst = 
+					Lookup.class.getDeclaredConstructor(Class.class, int.class);
+		} catch (NoSuchMethodException | SecurityException e) {
+			throw new RuntimeException(e);
+		}
+		if (!lookupPrivConst.isAccessible()) {
+			lookupPrivConst.setAccessible(true);
+		}
+	}
 	
 	private static final TreeSet<String> reservedWords = new TreeSet<>();
 	static {
@@ -33,15 +50,25 @@ final class ProxyTemplate {
 	final TreeMap<String, ProxyDatatype> datatypes = new TreeMap<>();
 	// Maps setter method name to the serviced fields
 	final TreeMap<String, ArrayList<String>> setters = new TreeMap<>();
+	final TreeMap<String, MethodHandle> defaults = new TreeMap<>();
 	
 	ProxyTemplate(Class<?> proxyInterface) throws IllegalArgumentException {
 		
 		TreeMap<String, ProxyDatatype> setterFields = new TreeMap<>();
 		for (Method meth : proxyInterface.getDeclaredMethods()) {
-			if (Modifier.isStatic(meth.getModifiers()) // Ignore interface static methods
-					|| meth.isDefault()) continue; // Ignore interface default methods
-			
-			if (meth.getReturnType() == void.class || meth.getReturnType() == proxyInterface) {
+			if (Modifier.isStatic(meth.getModifiers())) { // Ignore interface static methods
+				continue;
+			} else if (meth.isDefault()) {
+				// Default methods must be invoked with a special handler
+				try {
+					MethodHandle h = lookupPrivConst.newInstance(proxyInterface, MethodHandles.Lookup.PRIVATE)
+						.unreflectSpecial(meth, proxyInterface);
+					
+					defaults.put(meth.toGenericString(), h);
+				} catch (Exception e) {
+					throw new RuntimeException(e);
+				}
+			} else if (meth.getReturnType() == void.class || meth.getReturnType() == proxyInterface) {
 				// Setter
 				if (meth.getParameterCount() == 0) 
 					throw new IllegalArgumentException("ProxyInterface setter " + 
