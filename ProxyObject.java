@@ -70,7 +70,6 @@ class ProxyObject implements InvocationHandler, Serializable {
 		int numParams = m.getParameterCount();
 		
 		final ArrayList<String> setter;
-		final Object gott;
 		
 		if (m.isDefault()) {
 			return getTemplate().defaults.get(m.toGenericString())
@@ -87,8 +86,8 @@ class ProxyObject implements InvocationHandler, Serializable {
 				return null;
 			}
 		} else if (numParams == 0) {
-			if ((gott = fields.get(name)) != null) {
-				return gott;
+			if (getTemplate().datatypes.containsKey(name)) {
+				return fields.get(name);
 			} else if (name.equals("hashCode")) {
 				return this.hashCode();
 			} else if (name.equals("toString")) {
