@@ -185,6 +185,7 @@ final class ProxyDatatype {
 		String className = converter.getProxyInterfaceClassName(mapctx);
 		Class<? extends ProxyInterface> clazz = (Class<? extends ProxyInterface>) Class.forName(className);
 		ProxyInterface intr = ProxyObject.newInstance(clazz);
+		intr = converter.preResolve(intr);
 		ProxyObject ih = (ProxyObject) Proxy.getInvocationHandler(intr);
 
 		for (String key : ih.templateKeys()) {

@@ -3,6 +3,8 @@ package com.xactmetal.abstraction.proxy;
 public interface DeconversionHandler<MapContext, ArrContext> extends ConversionConstants {
 	public int arrayLength(ArrContext src);
 	
+	// Optional, called before filling out object
+	public default ProxyInterface preResolve(ProxyInterface obj) {return obj;}
 	// Optional, called after object completion
 	public default ProxyInterface postResolve(ProxyInterface obj) {return obj;}
 
