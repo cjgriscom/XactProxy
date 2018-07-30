@@ -1,5 +1,7 @@
 package com.xactmetal.abstraction.proxy;
 
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.HashSet;
 
@@ -30,7 +32,13 @@ final class ProxyInterfaceCache {
 		}
 		
 		if (!foundProxyInterface) {
-			throw new IllegalArgumentException(proxyInterface + " does not extend ProxyInterface");
+			// Special exception for interfaces with only static and default methods
+			for (Method m : proxyInterface.getDeclaredMethods()) {
+				if (m.isDefault()) continue;
+				if (Modifier.isStatic(m.getModifiers())) continue;
+				
+				throw new IllegalArgumentException(proxyInterface + " does not extend ProxyInterface");
+			}
 		}
 		
 		validatedClasses.put(proxyInterface, new ProxyTemplate(proxyInterface));
