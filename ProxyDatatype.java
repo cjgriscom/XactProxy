@@ -192,7 +192,7 @@ final class ProxyDatatype {
 					ih.getDatatypeFromDatatypeConverterInternal(key).unwrap(converter, key, mapctx));
 		}
 		
-		return intr;
+		return converter.postResolve(intr);
 	}
 	
 	private <MapContext, ArrContext> Object unwrap(

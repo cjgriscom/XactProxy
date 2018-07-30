@@ -7,6 +7,9 @@ public abstract class AbstractConversionHandler<MapContext, ArrContext> {
 	
 	protected abstract MapContext constructMap(int slots);
 	protected abstract ArrContext constructArray(int size);
+	
+	// Optional, called after object completion
+	protected ProxyInterface postResolve(ProxyInterface obj) {return obj;}
 
 	protected abstract boolean isNull(MapContext src, String name);
 	protected abstract boolean isNull(ArrContext src, int i);
