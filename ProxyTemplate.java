@@ -12,6 +12,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.Map.Entry;
 
 import com.xactmetal.abstraction.proxy.ProxyDatatype.Base;
 
@@ -128,7 +129,10 @@ final class ProxyTemplate {
 				setters.putAll(subtemplate.setters);
 				references.add(c);
 				references.addAll(subtemplate.references);
-				defaults.putAll(subtemplate.defaults);
+				// Add defaults without replacing any
+				for (Entry<String, MethodHandle> def : subtemplate.defaults.entrySet()) {
+					if (!defaults.containsKey(def.getKey())) defaults.put(def.getKey(), def.getValue());
+				}
 			}
 		}
 		
