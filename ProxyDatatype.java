@@ -121,7 +121,7 @@ final class ProxyDatatype {
 	}
 	
 	static <MapContext, ArrContext> MapContext convertFromProxyInterface(
-			AbstractConversionHandler<MapContext, ArrContext> converter,
+			ConversionHandler<MapContext, ArrContext> converter,
 			ProxyObject ih) {
 		
 		MapContext mapctx = converter.constructMap(ih.templateKeys().size());
@@ -136,14 +136,14 @@ final class ProxyDatatype {
 	}
 	
 	static <MapContext, ArrContext> MapContext convertFromProxyInterface(
-			AbstractConversionHandler<MapContext, ArrContext> converter,
+			ConversionHandler<MapContext, ArrContext> converter,
 			ProxyInterface intr) {
 		
 		return convertFromProxyInterface(converter, (ProxyObject) Proxy.getInvocationHandler(intr));
 	}
 
 	public <MapContext, ArrContext> MapContext wrapAndPut(
-			AbstractConversionHandler<MapContext, ArrContext> converter,
+			ConversionHandler<MapContext, ArrContext> converter,
 			String name,
 			Object item,
 			MapContext mapctx) throws IllegalArgumentException {
@@ -159,7 +159,7 @@ final class ProxyDatatype {
 	}
 	
 	private <MapContext, ArrContext> ArrContext createWrappedNDArray(
-			AbstractConversionHandler<MapContext, ArrContext> converter, 
+			ConversionHandler<MapContext, ArrContext> converter, 
 			Object item) throws IllegalArgumentException {
 		
 		int len = Array.getLength(item);
@@ -180,7 +180,7 @@ final class ProxyDatatype {
 	
 	@SuppressWarnings("unchecked")
 	static <MapContext, ArrContext> ProxyInterface convertToProxyInterface(
-			AbstractConversionHandler<MapContext, ArrContext> converter,
+			DeconversionHandler<MapContext, ArrContext> converter,
 			MapContext mapctx) throws ClassCastException, ClassNotFoundException {
 		String className = converter.getProxyInterfaceClassName(mapctx);
 		Class<? extends ProxyInterface> clazz = (Class<? extends ProxyInterface>) Class.forName(className);
@@ -196,7 +196,7 @@ final class ProxyDatatype {
 	}
 	
 	private <MapContext, ArrContext> Object unwrap(
-			AbstractConversionHandler<MapContext, ArrContext> converter, 
+			DeconversionHandler<MapContext, ArrContext> converter, 
 			String name,
 			MapContext mapctx) throws IllegalArgumentException, ClassCastException, ClassNotFoundException {
 		
@@ -209,7 +209,7 @@ final class ProxyDatatype {
 	}
 	
 	private <MapContext, ArrContext> Object createUnwrappedNDArray(
-			AbstractConversionHandler<MapContext, ArrContext> converter, 
+			DeconversionHandler<MapContext, ArrContext> converter, 
 			ArrContext src) throws IllegalArgumentException, ClassCastException, ClassNotFoundException {
 		
 		if (dimensions == 1) {
@@ -228,12 +228,12 @@ final class ProxyDatatype {
 	
 
 	// Data Converters for Proxy Objects
-	public static <MapContext, ArrContext> Object unwrapFlatMapProxy(AbstractConversionHandler<MapContext, ArrContext> converter, MapContext src, String name, ProxyDatatype type) throws ClassCastException, ClassNotFoundException {
+	public static <MapContext, ArrContext> Object unwrapFlatMapProxy(DeconversionHandler<MapContext, ArrContext> converter, MapContext src, String name, ProxyDatatype type) throws ClassCastException, ClassNotFoundException {
 		MapContext nested = converter.getNestedProxy(src, name);
 		return convertToProxyInterface(converter, nested);
 	}
 	
-	public static <MapContext, ArrContext> Object constructAndFillProxy(AbstractConversionHandler<MapContext, ArrContext> converter, ArrContext src, ProxyDatatype type) throws ClassCastException, ClassNotFoundException {
+	public static <MapContext, ArrContext> Object constructAndFillProxy(DeconversionHandler<MapContext, ArrContext> converter, ArrContext src, ProxyDatatype type) throws ClassCastException, ClassNotFoundException {
 		int len = converter.arrayLength(src);
 		
 		Object[] arr = (Object[]) Array.newInstance(type.proxyInterface, len);
@@ -246,11 +246,11 @@ final class ProxyDatatype {
 		return arr;
 	}
 	
-	public static <MapContext, ArrContext> MapContext wrapFlatMapProxy(AbstractConversionHandler<MapContext, ArrContext> converter, MapContext dest, String name, Object item, ProxyDatatype type) {
+	public static <MapContext, ArrContext> MapContext wrapFlatMapProxy(ConversionHandler<MapContext, ArrContext> converter, MapContext dest, String name, Object item, ProxyDatatype type) {
 		return converter.putNestedProxy(dest, name, convertFromProxyInterface(converter, (ProxyInterface) item));
 	}
 	
-	public static <MapContext, ArrContext> ArrContext fillAbstractArrayProxy(AbstractConversionHandler<MapContext, ArrContext> converter, Object src, ArrContext dest, ProxyDatatype type) {
+	public static <MapContext, ArrContext> ArrContext fillAbstractArrayProxy(ConversionHandler<MapContext, ArrContext> converter, Object src, ArrContext dest, ProxyDatatype type) {
 		Object[] srcArr = (Object[]) src;
 		for (int i = 0; i < srcArr.length; i++) {
 			if (srcArr[i] == null) converter.putNull(dest, i);

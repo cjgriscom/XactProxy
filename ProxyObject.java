@@ -126,7 +126,7 @@ class ProxyObject implements InvocationHandler, Serializable {
 			}
 			return true;
 		} else if (numParams == 1 && name.equals("convert")) {
-			return ProxyDatatype.convertFromProxyInterface((AbstractConversionHandler<?,?>) args[0], this);
+			return ProxyDatatype.convertFromProxyInterface((ConversionHandler<?,?>) args[0], this);
 		}
 		throw new UnsupportedOperationException();
 	}
