@@ -10,11 +10,12 @@ import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Map.Entry;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.Map.Entry;
 
 import com.xactmetal.abstraction.proxy.ProxyDatatype.Base;
+import com.xactmetal.abstraction.proxy.annotations.ReadOnly;
 
 final class ProxyTemplate {
 	
@@ -52,9 +53,13 @@ final class ProxyTemplate {
 	// Maps setter method name to the serviced fields
 	final TreeMap<String, ArrayList<String>> setters = new TreeMap<>();
 	final TreeMap<String, MethodHandle> defaults = new TreeMap<>();
+	final boolean readOnly;
 	
 	ProxyTemplate(Class<?> proxyInterface) throws IllegalArgumentException {
+		// Check readOnly
+		readOnly = proxyInterface.getDeclaredAnnotationsByType(ReadOnly.class).length > 0;
 		
+		// Traverse declared methods
 		TreeMap<String, ProxyDatatype> setterFields = new TreeMap<>();
 		for (Method meth : proxyInterface.getDeclaredMethods()) {
 			if (Modifier.isStatic(meth.getModifiers())) { // Ignore interface static methods
@@ -71,6 +76,10 @@ final class ProxyTemplate {
 				}
 			} else if (meth.getReturnType() == void.class || meth.getReturnType() == proxyInterface) {
 				// Setter
+				if (readOnly) {
+					throw new IllegalArgumentException("Encountered setter in ReadOnly ProxyInterface " + proxyInterface.getName());
+				}
+				
 				if (meth.getParameterCount() == 0) 
 					throw new IllegalArgumentException("ProxyInterface setter " + 
 							meth.getName() + " has 0 parameters");
@@ -111,11 +120,11 @@ final class ProxyTemplate {
 		mergedKeys.addAll(datatypes.keySet());
 		
 		for (String field : mergedKeys) {
-			if (! setterFields.containsKey(field)) {
+			if (!readOnly && !setterFields.containsKey(field)) { // Not read only and undefined setter
 				throw new IllegalArgumentException("ProxyInterface field " + field + " has no setter in " + proxyInterface.getName());
 			} else if (! datatypes.containsKey(field)) {
 				throw new IllegalArgumentException("ProxyInterface field " + field + " has no getter in " + proxyInterface.getName());
-			} else if (!setterFields.get(field).equals(datatypes.get(field))) {
+			} else if (!readOnly && !setterFields.get(field).equals(datatypes.get(field))) {
 				throw new IllegalArgumentException("ProxyInterface field " + field + " has mismatched getter/setter datatypes in " + proxyInterface.getName());
 			}
 		}
@@ -129,9 +138,14 @@ final class ProxyTemplate {
 				setters.putAll(subtemplate.setters);
 				references.add(c);
 				references.addAll(subtemplate.references);
-				// Add defaults without replacing any
+				// Add inherited defaults without replacing any
 				for (Entry<String, MethodHandle> def : subtemplate.defaults.entrySet()) {
 					if (!defaults.containsKey(def.getKey())) defaults.put(def.getKey(), def.getValue());
+				}
+				
+				// Check readOnly inheritance
+				if (subtemplate.readOnly != this.readOnly) {
+					throw new IllegalArgumentException("ReadOnly inheritance must remain consistent in " + proxyInterface.getName());
 				}
 			}
 		}
