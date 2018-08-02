@@ -179,6 +179,7 @@ final class ProxyTemplate {
 		else return param;
 	}
 	
+	@SuppressWarnings("unchecked")
 	private ProxyDatatype mapDatatype(Class<?> param, Class<?> owner) throws IllegalArgumentException {
 		int dims = getArrayDimensions(param,0);
 		param = getArrayBaseType(param);
@@ -231,7 +232,7 @@ final class ProxyTemplate {
 						throw new IllegalArgumentException("Reference loop for " + param + " detected in " + owner);
 					}
 					ProxyInterfaceCache.validateProxyInterface(param);
-					return new ProxyDatatype(Base.ProxyInterface, dims, param);
+					return new ProxyDatatype(Base.ProxyInterface, dims, (Class<? extends ProxyInterface>) param);
 				}
 			}
 		}

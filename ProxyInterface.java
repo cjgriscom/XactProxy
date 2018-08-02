@@ -6,8 +6,9 @@ public interface ProxyInterface {
 		return ProxyObject.newInstance(proxyInterface);
 	}
 	
-	public static <MapContext, ArrContext> ProxyInterface from(MapContext src, DeconversionHandler<MapContext, ArrContext> converter) throws ClassCastException, ClassNotFoundException {
-		return ProxyDatatype.convertToProxyInterface(converter, src);
+	@SuppressWarnings("unchecked")
+	public static <MapContext, ArrContext, P extends ProxyInterface> P from(Class<P> type, MapContext src, DeconversionHandler<MapContext, ArrContext> converter) {
+		return (P) ProxyDatatype.convertToProxyInterface(type, converter, src);
 	}
 	
 	public <MapContext, ArrContext> MapContext convert(

@@ -1,6 +1,6 @@
 package com.xactmetal.abstraction.proxy;
 
-public interface DeconversionHandler<MapContext, ArrContext> extends ConversionConstants {
+public interface DeconversionHandler<MapContext, ArrContext> {
 	public int arrayLength(ArrContext src);
 	
 	// Optional, called before filling out object
@@ -11,7 +11,6 @@ public interface DeconversionHandler<MapContext, ArrContext> extends ConversionC
 	public boolean isNull(MapContext src, String name);
 	public boolean isNull(ArrContext src, int i);
 	
-	public String getProxyInterfaceClassName(MapContext src);
 	public boolean getBoolean(MapContext src, String name);
 	public boolean getBoolean(ArrContext src, int i);
 	public byte getByte(MapContext src, String name);
@@ -29,8 +28,8 @@ public interface DeconversionHandler<MapContext, ArrContext> extends ConversionC
 	public String getString(MapContext src, String name);
 	public String getString(ArrContext src, int i);
 
-	public MapContext getNestedProxy(MapContext src, String name);
-	public MapContext getNestedProxy(ArrContext src, int i);
+	public MapContext getNestedProxy(Class<? extends ProxyInterface> targetClass, MapContext src, String name);
+	public MapContext getNestedProxy(Class<? extends ProxyInterface> targetClass, ArrContext src, int i);
 	public ArrContext getArray(MapContext src, String name);
 	public ArrContext getArray(ArrContext src, int i);
 }

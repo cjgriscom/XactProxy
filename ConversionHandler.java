@@ -1,13 +1,12 @@
 package com.xactmetal.abstraction.proxy;
 
-public interface ConversionHandler<MapContext, ArrContext> extends ConversionConstants {
+public interface ConversionHandler<MapContext, ArrContext> {
 	public MapContext constructMap(int slots);
 	public ArrContext constructArray(int size);
 	
 	public MapContext putNull(MapContext dest, String name);
 	public ArrContext putNull(ArrContext dest, int i);
 	
-	public MapContext putProxyInterfaceClassName(MapContext dest, String className);
 	public MapContext putBoolean(MapContext dest, String name, boolean obj);
 	public ArrContext putBoolean(ArrContext dest, int i, boolean obj);
 	public MapContext putByte(MapContext dest, String name, byte obj);

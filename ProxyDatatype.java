@@ -12,7 +12,7 @@ final class ProxyDatatype {
 	public final Base base;
 	public final int dimensions;
 	public final Object defaultValue;
-	public final Class<?> proxyInterface;
+	public final Class<? extends ProxyInterface> proxyInterface;
 	public final boolean primitive;
 	
 	public static enum Base {
@@ -82,7 +82,7 @@ final class ProxyDatatype {
 	}
 	
 	// Generic
-	private ProxyDatatype(Base base, int dimensions, Object defaultValue, Class<?> proxyInterface, boolean primitive) {
+	private ProxyDatatype(Base base, int dimensions, Object defaultValue, Class<? extends ProxyInterface> proxyInterface, boolean primitive) {
 		this.base = base;
 		this.dimensions = dimensions;
 		this.defaultValue = defaultValue;
@@ -91,7 +91,7 @@ final class ProxyDatatype {
 	}
 	
 	// ProxyInterface
-	public ProxyDatatype(Base base, int dimensions, Class<?> proxyInterface) {
+	public ProxyDatatype(Base base, int dimensions, Class<? extends ProxyInterface> proxyInterface) {
 		this(base, dimensions, null, proxyInterface, false);
 	}
 	
@@ -125,7 +125,6 @@ final class ProxyDatatype {
 			ProxyObject ih) {
 		
 		MapContext mapctx = converter.constructMap(ih.templateKeys().size());
-		converter.putProxyInterfaceClassName(mapctx, ih.proxyInterface.getName());
 		
 		for (String key : ih.templateKeys()) {
 			mapctx = ih.getDatatypeFromDatatypeConverterInternal(key)
@@ -178,13 +177,11 @@ final class ProxyDatatype {
 		}
 	}
 	
-	@SuppressWarnings("unchecked")
 	static <MapContext, ArrContext> ProxyInterface convertToProxyInterface(
+			Class<? extends ProxyInterface> templateClass,
 			DeconversionHandler<MapContext, ArrContext> converter,
-			MapContext mapctx) throws ClassCastException, ClassNotFoundException {
-		String className = converter.getProxyInterfaceClassName(mapctx);
-		Class<? extends ProxyInterface> clazz = (Class<? extends ProxyInterface>) Class.forName(className);
-		ProxyInterface intr = ProxyObject.newInstance(clazz);
+			MapContext mapctx) {
+		ProxyInterface intr = ProxyObject.newInstance(templateClass);
 		intr = converter.preResolve(intr);
 		ProxyObject ih = (ProxyObject) Proxy.getInvocationHandler(intr);
 
@@ -199,7 +196,7 @@ final class ProxyDatatype {
 	private <MapContext, ArrContext> Object unwrap(
 			DeconversionHandler<MapContext, ArrContext> converter, 
 			String name,
-			MapContext mapctx) throws IllegalArgumentException, ClassCastException, ClassNotFoundException {
+			MapContext mapctx) throws IllegalArgumentException {
 		
 		if (converter.isNull(mapctx, name)) return null;
 		else if (dimensions == 0) {
@@ -211,7 +208,7 @@ final class ProxyDatatype {
 	
 	private <MapContext, ArrContext> Object createUnwrappedNDArray(
 			DeconversionHandler<MapContext, ArrContext> converter, 
-			ArrContext src) throws IllegalArgumentException, ClassCastException, ClassNotFoundException {
+			ArrContext src) throws IllegalArgumentException {
 		
 		if (dimensions == 1) {
 			return base.constructAndFill.constructAndFill(converter, src, this);
@@ -229,18 +226,20 @@ final class ProxyDatatype {
 	
 
 	// Data Converters for Proxy Objects
-	public static <MapContext, ArrContext> Object unwrapFlatMapProxy(DeconversionHandler<MapContext, ArrContext> converter, MapContext src, String name, ProxyDatatype type) throws ClassCastException, ClassNotFoundException {
-		MapContext nested = converter.getNestedProxy(src, name);
-		return convertToProxyInterface(converter, nested);
+	public static <MapContext, ArrContext> Object unwrapFlatMapProxy(DeconversionHandler<MapContext, ArrContext> converter, MapContext src, String name, ProxyDatatype type) {
+		@SuppressWarnings("unchecked")
+		MapContext nested = converter.getNestedProxy((Class<? extends ProxyInterface>) type.getBaseClass(), src, name);
+		return convertToProxyInterface(type.proxyInterface, converter, nested);
 	}
 	
-	public static <MapContext, ArrContext> Object constructAndFillProxy(DeconversionHandler<MapContext, ArrContext> converter, ArrContext src, ProxyDatatype type) throws ClassCastException, ClassNotFoundException {
+	public static <MapContext, ArrContext> Object constructAndFillProxy(DeconversionHandler<MapContext, ArrContext> converter, ArrContext src, ProxyDatatype type) {
 		int len = converter.arrayLength(src);
 		
 		Object[] arr = (Object[]) Array.newInstance(type.proxyInterface, len);
 		for (int i = 0; i < len; i++) {
 			if (!converter.isNull(src, i)) {
-				Object o = convertToProxyInterface(converter, converter.getNestedProxy(src, i));
+				@SuppressWarnings("unchecked")
+				Object o = convertToProxyInterface(type.proxyInterface, converter, converter.getNestedProxy((Class<? extends ProxyInterface>) type.getBaseClass(), src, i));
 				arr[i] = (ProxyInterface)type.proxyInterface.cast(o);
 			}
 		}

@@ -38,12 +38,12 @@ final class DataConverters {
 	
 	static interface UnwrapFlatMap {
 		<MapContext, ArrContext> Object unwrapFlatMap(
-				DeconversionHandler<MapContext, ArrContext> converter, MapContext src, String name, ProxyDatatype type) throws ClassCastException, ClassNotFoundException;
+				DeconversionHandler<MapContext, ArrContext> converter, MapContext src, String name, ProxyDatatype type);
 	}
 	
 	static interface ConstructAndFill {
 		<MapContext, ArrContext> Object constructAndFill(
-				DeconversionHandler<MapContext, ArrContext> converter, ArrContext src, ProxyDatatype type) throws ClassCastException, ClassNotFoundException;
+				DeconversionHandler<MapContext, ArrContext> converter, ArrContext src, ProxyDatatype type);
 	}
 	
 	static interface WrapFlatMap {
