@@ -15,6 +15,8 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import com.xactmetal.abstraction.proxy.ProxyDatatype.Base;
+import com.xactmetal.abstraction.proxy.annotations.Order;
+import com.xactmetal.abstraction.proxy.annotations.Ordered;
 import com.xactmetal.abstraction.proxy.annotations.ReadOnly;
 
 final class ProxyTemplate {
@@ -50,15 +52,26 @@ final class ProxyTemplate {
 	
 	// Maps field names to datatypes
 	final TreeMap<String, ProxyDatatype> datatypes = new TreeMap<>();
+	// Array of ordered keys for use with the @Order annotation
+	// It is populated by continually verifying length against #inserted
+	// If length != inserted at end of constructor, there is a hole
+	// If an element already exists in the list, there's a collision
+	final ArrayList<String> orderedDatatypeKeys = new ArrayList<String>();
 	// Maps setter method name to the serviced fields
 	final TreeMap<String, ArrayList<String>> setters = new TreeMap<>();
 	final TreeMap<String, MethodHandle> defaults = new TreeMap<>();
+	final boolean empty;
 	final boolean readOnly;
+	final boolean ordered;
 	
 	ProxyTemplate(Class<?> proxyInterface) throws IllegalArgumentException {
-		// Check readOnly
-		readOnly = proxyInterface.getDeclaredAnnotationsByType(ReadOnly.class).length > 0;
+		boolean tmpEmpty = true; // Start assuming empty
 		
+		// Check readOnly
+		readOnly = proxyInterface.getDeclaredAnnotation(ReadOnly.class) != null;
+		// Check ordered
+		ordered = proxyInterface.getDeclaredAnnotation(Ordered.class) != null;
+
 		// Traverse declared methods
 		TreeMap<String, ProxyDatatype> setterFields = new TreeMap<>();
 		for (Method meth : proxyInterface.getDeclaredMethods()) {
@@ -79,6 +92,8 @@ final class ProxyTemplate {
 				if (readOnly) {
 					throw new IllegalArgumentException("Encountered setter in ReadOnly ProxyInterface " + proxyInterface.getName());
 				}
+				
+				tmpEmpty = false;
 				
 				if (meth.getParameterCount() == 0) 
 					throw new IllegalArgumentException("ProxyInterface setter " + 
@@ -106,11 +121,29 @@ final class ProxyTemplate {
 					throw new IllegalArgumentException("ProxyInterface getter " + 
 							meth.getName() + " has > 0 parameters in " + proxyInterface.getName());
 				
+				tmpEmpty = false;
+				
 				ProxyDatatype type = mapDatatype(meth.getReturnType(), proxyInterface);
 				
 				if (reservedWords.contains(meth.getName())) throw new IllegalArgumentException(meth.getName() + 
 						" is a reserved word in " + proxyInterface.getName());
 				datatypes.put(meth.getName(), type);
+				
+				if (ordered) {
+					Order order = meth.getDeclaredAnnotation(Order.class);
+					if (order != null) {
+						int i = order.value();
+						while (orderedDatatypeKeys.size() <= i) orderedDatatypeKeys.add(null);
+						if (orderedDatatypeKeys.get(i) == null) {
+							orderedDatatypeKeys.set(i, meth.getName());
+						} else {
+							// Order named twice
+							throw new IllegalArgumentException("Order collision " + i + " in " + proxyInterface.getName());
+						}
+					} else {
+						throw new IllegalArgumentException("Missing Order annotation for " + meth.getName() + " in " + proxyInterface.getName());
+					}
+				}
 			}
 		}
 		
@@ -129,7 +162,23 @@ final class ProxyTemplate {
 			}
 		}
 		
+		if (ordered) {
+			if (orderedDatatypeKeys.size() != datatypes.size()) {
+				throw new IllegalArgumentException("Gap in Order annotations in " + proxyInterface.getName());
+			}
+		}
+		
+		// Set empty status
+		empty = tmpEmpty;
+		
+		
 		// Add superinterface setters and fields
+		
+		//Don't duplicate order entries
+		TreeSet<String> includedOrderKeys = new TreeSet<>(); 
+		ArrayList<String> parentOrderKeys = new ArrayList<>();
+		
+		// getInterfaces is ordered
 		for (Class<?> c : proxyInterface.getInterfaces()) {
 			if (ProxyInterfaceCache.hasCachedProxyInterface(c)) {
 				// TODO is there any redundant work here?
@@ -143,14 +192,55 @@ final class ProxyTemplate {
 					if (!defaults.containsKey(def.getKey())) defaults.put(def.getKey(), def.getValue());
 				}
 				
-				// Check readOnly inheritance
-				if (subtemplate.readOnly != this.readOnly) {
-					throw new IllegalArgumentException("ReadOnly inheritance must remain consistent in " + proxyInterface.getName());
+				// Check readOnly and Ordered inheritance
+				checkReadOnlyAndOrderedInheritanceChain(proxyInterface, c, subtemplate);
+				
+				// Stack ordered properties
+				// Propagate even if this is an empty class
+				//   so that empty ProxyInterfaces don't break the order chain
+				if (empty || ordered) {
+					for (String k : subtemplate.orderedDatatypeKeys) {
+						if (includedOrderKeys.add(k)) {
+							// Didn't already exist
+							parentOrderKeys.add(k);
+						}
+					}
 				}
+				
+			}
+		}
+		
+		if (empty) {
+			this.orderedDatatypeKeys.addAll(parentOrderKeys);
+		} else if (ordered) {
+			Ordered ordered = proxyInterface.getAnnotation(Ordered.class);
+			switch (ordered.parentOrder()) {
+			case PREFIX:
+				this.orderedDatatypeKeys.addAll(0, parentOrderKeys); // Add to front
+				break;
+			case POSTFIX:
+				this.orderedDatatypeKeys.addAll(parentOrderKeys); // Add to end
+				break;
 			}
 		}
 		
 		recursiveReferenceLoopCheck(datatypes.values(), proxyInterface);
+	}
+	
+	private void checkReadOnlyAndOrderedInheritanceChain(Class<?> thisProxy, Class<?> subProxy, ProxyTemplate subtemplate) {
+		if (subtemplate.empty) {
+			// Empty proxies aren't required to declare ReadOnly so we must check parents
+			for (Class<?> c : subProxy.getInterfaces()) {
+				if (ProxyInterfaceCache.hasCachedProxyInterface(c)) {
+					ProxyTemplate nextSubtemplate = ProxyInterfaceCache.validateProxyInterface(c);
+					checkReadOnlyAndOrderedInheritanceChain(thisProxy, c, nextSubtemplate);
+				}
+			}
+		} else if (subtemplate.readOnly != this.readOnly) {
+			throw new IllegalArgumentException("ReadOnly inheritance must remain consistent in " + thisProxy.getName());
+		} else if (this.ordered && !subtemplate.ordered) {
+			throw new IllegalArgumentException("Parent types must annotate Ordered " + thisProxy.getName());
+		}
 	}
 	
 	private void recursiveReferenceLoopCheck(Collection<ProxyDatatype> types, Class<?> owner) {

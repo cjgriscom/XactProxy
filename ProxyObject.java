@@ -9,7 +9,6 @@ import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.Map.Entry;
 import java.util.TreeMap;
 
 class ProxyObject implements InvocationHandler, Serializable {
@@ -61,7 +60,8 @@ class ProxyObject implements InvocationHandler, Serializable {
 	}
 	
 	Collection<String> templateKeys() {
-		return getTemplate().datatypes.keySet();
+		if (getTemplate().ordered) return getTemplate().orderedDatatypeKeys;
+		else return getTemplate().datatypes.keySet();
 	}
 	
 	@Override
@@ -96,12 +96,14 @@ class ProxyObject implements InvocationHandler, Serializable {
 				out.append(proxyInterface.getSimpleName());
 				out.append(" | ");
 				boolean first = true;
-				for (Entry<String, Object> obj : fields.entrySet()) {
+				
+				for (String key : templateKeys()) {
+					Object obj = fields.get(key);
 					if (!first) out.append(", ");
 					first = false;
-					out.append(obj.getKey());
+					out.append(key);
 					out.append(": ");
-					out.append(obj.getValue());
+					out.append(obj);
 					
 				}
 				out.append("]");

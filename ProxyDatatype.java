@@ -125,7 +125,7 @@ final class ProxyDatatype {
 			ProxyObject ih) {
 		
 		MapContext mapctx = converter.constructMap(ih.templateKeys().size());
-		
+
 		for (String key : ih.templateKeys()) {
 			mapctx = ih.getDatatypeFromDatatypeConverterInternal(key)
 					.wrapAndPut(converter, key, ih.getObjectFromDatatypeConverterInternal(key), mapctx);
@@ -184,7 +184,7 @@ final class ProxyDatatype {
 		ProxyInterface intr = ProxyObject.newInstance(templateClass);
 		intr = converter.preResolve(intr);
 		ProxyObject ih = (ProxyObject) Proxy.getInvocationHandler(intr);
-
+		
 		for (String key : ih.templateKeys()) {
 			ih.putObjectFromDatatypeConverterInternal(key, 
 					ih.getDatatypeFromDatatypeConverterInternal(key).unwrap(converter, key, mapctx));
