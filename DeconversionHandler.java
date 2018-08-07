@@ -4,9 +4,9 @@ public interface DeconversionHandler<MapContext, ArrContext> {
 	public int arrayLength(ArrContext src);
 	
 	// Optional, called before filling out object
-	public default ProxyInterface preResolve(ProxyInterface obj) {return obj;}
+	public default ProxyInterface preResolve(Class<? extends ProxyInterface> objClass, ProxyInterface obj) {return obj;}
 	// Optional, called after object completion
-	public default ProxyInterface postResolve(ProxyInterface obj) {return obj;}
+	public default ProxyInterface postResolve(Class<? extends ProxyInterface> objClass, ProxyInterface obj) {return obj;}
 
 	public boolean isNull(MapContext src, String name);
 	public boolean isNull(ArrContext src, int i);
@@ -30,6 +30,6 @@ public interface DeconversionHandler<MapContext, ArrContext> {
 
 	public MapContext getNestedProxy(Class<? extends ProxyInterface> targetClass, MapContext src, String name);
 	public MapContext getNestedProxy(Class<? extends ProxyInterface> targetClass, ArrContext src, int i);
-	public ArrContext getArray(MapContext src, String name);
-	public ArrContext getArray(ArrContext src, int i);
+	public ArrContext getArray(Class<?> baseClass, MapContext src, String name);
+	public ArrContext getArray(Class<?> baseClass, ArrContext src, int i);
 }

@@ -1,8 +1,8 @@
 package com.xactmetal.abstraction.proxy;
 
 public interface ConversionHandler<MapContext, ArrContext> {
-	public MapContext constructMap(int slots);
-	public ArrContext constructArray(int size);
+	public MapContext constructMap(Class<?> baseClass, int slots);
+	public ArrContext constructArray(Class<?> baseClass, int size);
 	
 	public MapContext putNull(MapContext dest, String name);
 	public ArrContext putNull(ArrContext dest, int i);

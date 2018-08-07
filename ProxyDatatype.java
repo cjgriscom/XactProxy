@@ -124,7 +124,7 @@ final class ProxyDatatype {
 			ConversionHandler<MapContext, ArrContext> converter,
 			ProxyObject ih) {
 		
-		MapContext mapctx = converter.constructMap(ih.templateKeys().size());
+		MapContext mapctx = converter.constructMap(ih.proxyInterface, ih.templateKeys().size());
 
 		for (String key : ih.templateKeys()) {
 			mapctx = ih.getDatatypeFromDatatypeConverterInternal(key)
@@ -162,7 +162,7 @@ final class ProxyDatatype {
 			Object item) throws IllegalArgumentException {
 		
 		int len = Array.getLength(item);
-		ArrContext arr = converter.constructArray(len);
+		ArrContext arr = converter.constructArray(getNDClass(dimensions-1), len);
 		
 		if (dimensions == 1) {
 			return base.fillAbstractArray.fillAbstractArray(converter, item, arr, this);
@@ -182,7 +182,7 @@ final class ProxyDatatype {
 			DeconversionHandler<MapContext, ArrContext> converter,
 			MapContext mapctx) {
 		ProxyInterface intr = ProxyObject.newInstance(templateClass);
-		intr = converter.preResolve(intr);
+		intr = converter.preResolve(templateClass, intr);
 		ProxyObject ih = (ProxyObject) Proxy.getInvocationHandler(intr);
 		
 		for (String key : ih.templateKeys()) {
@@ -190,7 +190,7 @@ final class ProxyDatatype {
 					ih.getDatatypeFromDatatypeConverterInternal(key).unwrap(converter, key, mapctx));
 		}
 		
-		return converter.postResolve(intr);
+		return converter.postResolve(templateClass, intr);
 	}
 	
 	private <MapContext, ArrContext> Object unwrap(
@@ -202,7 +202,7 @@ final class ProxyDatatype {
 		else if (dimensions == 0) {
 			return base.unwrapFlatMap.unwrapFlatMap(converter, mapctx, name, this);
 		} else {
-			return createUnwrappedNDArray(converter, converter.getArray(mapctx, name));
+			return createUnwrappedNDArray(converter, converter.getArray(getNDClass(dimensions-1), mapctx, name));
 		}
 	}
 	
@@ -213,12 +213,13 @@ final class ProxyDatatype {
 		if (dimensions == 1) {
 			return base.constructAndFill.constructAndFill(converter, src, this);
 		} else {
+			Class<?> arrayBase = getNDClass(dimensions-1);
 			int len = converter.arrayLength(src);
-			Object[] arr = (Object[]) Array.newInstance(getNDClass(dimensions-1), len);
+			Object[] arr = (Object[]) Array.newInstance(arrayBase, len);
 			ProxyDatatype descend = descendArray();
 			for (int i = 0; i < len; i++) {
 				if (converter.isNull(src, i)) arr[i] = null;
-				else arr[i] = descend.createUnwrappedNDArray(converter, converter.getArray(src, i));
+				else arr[i] = descend.createUnwrappedNDArray(converter, converter.getArray(arrayBase, src, i));
 			}
 			return arr;
 		}
