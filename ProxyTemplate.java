@@ -87,7 +87,7 @@ final class ProxyTemplate {
 				} catch (Exception e) {
 					throw new RuntimeException(e);
 				}
-			} else if (meth.getReturnType() == void.class || meth.getReturnType() == proxyInterface) {
+			} else if (meth.getParameterCount() > 0 && (meth.getReturnType() == void.class || meth.getReturnType() == proxyInterface)) {
 				// Setter
 				if (readOnly) {
 					throw new IllegalArgumentException("Encountered setter in ReadOnly ProxyInterface " + proxyInterface.getName());
