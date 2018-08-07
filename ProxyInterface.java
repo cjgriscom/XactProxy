@@ -11,6 +11,10 @@ public interface ProxyInterface {
 		return (P) ProxyDatatype.convertToProxyInterface(type, converter, src);
 	}
 	
+	public static <MapContext, ArrContext> MapContext convert(ProxyInterface intr, ConversionHandler<MapContext, ArrContext> converter) {
+		return ProxyDatatype.convertFromProxyInterface(converter, intr);
+	}
+	
 	public <MapContext, ArrContext> MapContext convert(
 			ConversionHandler<MapContext, ArrContext> converter);
 	
