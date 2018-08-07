@@ -18,6 +18,7 @@ import com.xactmetal.abstraction.proxy.ProxyDatatype.Base;
 import com.xactmetal.abstraction.proxy.annotations.Order;
 import com.xactmetal.abstraction.proxy.annotations.Ordered;
 import com.xactmetal.abstraction.proxy.annotations.ReadOnly;
+import com.xactmetal.abstraction.proxy.annotations.SetterArguments;
 
 final class ProxyTemplate {
 	
@@ -101,18 +102,30 @@ final class ProxyTemplate {
 				
 				ArrayList<String> serviced = new ArrayList<String>();
 				
-				for (Parameter p : meth.getParameters()) {
+				Parameter[] params = meth.getParameters();
+				SetterArguments annotNames = meth.getAnnotation(SetterArguments.class);
+				
+				if (annotNames != null && annotNames.names().length != params.length)
+					throw new IllegalArgumentException("Annotated setter argument lengths does not match method arguments in " + proxyInterface.getName());
+				
+				for (int i = 0; i < params.length; i++) {
+					Parameter p = params[i];
+					
+					String name;
+					if (annotNames != null) name = annotNames.names()[i];
+					else name = p.getName();
+					
 					ProxyDatatype type = mapDatatype(p.getType(), proxyInterface);
 
-					ProxyDatatype existing = setterFields.put(p.getName(), type);
+					ProxyDatatype existing = setterFields.put(name, type);
 					
 					if (existing != null && existing != type) {
-						throw new IllegalArgumentException("ProxyInterface field " + p.getName() + " has mismatched setter datatypes in " + proxyInterface.getName());
+						throw new IllegalArgumentException("ProxyInterface field " + name + " has mismatched setter datatypes in " + proxyInterface.getName());
 					}
 					
-					if (reservedWords.contains(p.getName())) throw new IllegalArgumentException(p.getName() + 
+					if (reservedWords.contains(name)) throw new IllegalArgumentException(name + 
 							" is a reserved word in " + proxyInterface.getName());
-					serviced.add(p.getName());
+					serviced.add(name);
 				}
 				setters.put(meth.toGenericString(), serviced);
 			} else {
