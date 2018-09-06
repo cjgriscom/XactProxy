@@ -32,6 +32,41 @@ class ProxyObject implements InvocationHandler, Serializable {
 		
 	ProxyObject(Class<? extends ProxyInterface> proxyInterface) {
 		this.proxyInterface = proxyInterface;
+		
+		ProxyTemplate template = ProxyInterfaceCache.validateProxyInterface(proxyInterface);
+		
+		// Instantiate primitives
+		for (String key : templateKeys()) {
+			ProxyDatatype dt = template.datatypes.get(key);
+			if (dt.isPrimitive() && dt.dimensions == 0) {
+				switch (dt.base) {
+				case Boolean:
+					fields.put(key, false);
+					break;
+				case Byte:
+					fields.put(key, (byte)0);
+					break;
+				case Double:
+					fields.put(key, 0.);
+					break;
+				case Float:
+					fields.put(key, 0f);
+					break;
+				case Integer:
+					fields.put(key, 0);
+					break;
+				case Long:
+					fields.put(key, 0L);
+					break;
+				case Short:
+					fields.put(key, (short)0);
+					break;
+				default:
+					break;
+				}
+			}
+			
+		}
 	}
 	
 	// Deserialize
