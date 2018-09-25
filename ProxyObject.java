@@ -146,6 +146,7 @@ class ProxyObject implements InvocationHandler, Serializable {
 				return out.toString();
 			}
 		} else if (numParams == 1 && name.equals("equals") && m.getParameterTypes()[0] == Object.class) {
+			if (args[0] == null) return false;
 			if (args[0].getClass() != proxyInterface) return false;
 			Iterator<Object> ti = fields.values().iterator();
 			Iterator<Object> oi = ((ProxyObject)Proxy.getInvocationHandler(args[0])).fields.values().iterator();
