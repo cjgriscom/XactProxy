@@ -119,7 +119,7 @@ final class ProxyTemplate {
 
 					ProxyDatatype existing = setterFields.put(name, type);
 					
-					if (existing != null && existing != type) {
+					if (existing != null && !existing.equals(type)) {
 						throw new IllegalArgumentException("ProxyInterface field " + name + " has mismatched setter datatypes in " + proxyInterface.getName());
 					}
 					
