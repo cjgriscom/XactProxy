@@ -17,5 +17,10 @@ public interface ProxyInterface {
 	
 	public <MapContext, ArrContext> MapContext convert(
 			ConversionHandler<MapContext, ArrContext> converter);
+
+	@SuppressWarnings("unchecked")
+	public static <T extends ProxyInterface> Class<T> classOf(T proxyInterface) {
+		return (Class<T>) proxyInterface.getClass().getInterfaces()[0];
+	}
 	
 }
