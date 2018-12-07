@@ -18,22 +18,20 @@ class ProxyObject implements InvocationHandler, Serializable {
 	@SuppressWarnings("unchecked")
 	static <T extends ProxyInterface> T newInstance(Class<T> proxyInterface) throws IllegalArgumentException {
 		// Ensure interface follows rules while caching it
-		ProxyInterfaceCache.validateProxyInterface_Lock(proxyInterface);
+		ProxyTemplate template = ProxyInterfaceCache.validateProxyInterface_Lock(proxyInterface);
 		
 		return (T) Proxy.newProxyInstance(
 				proxyInterface.getClassLoader(), 
 				new Class<?>[] {proxyInterface},
-				new ProxyObject(proxyInterface));
+				new ProxyObject(proxyInterface, template));
 	}
 	
 	final Class<? extends ProxyInterface> proxyInterface;
 	
 	private final TreeMap<String, Object> fields = new TreeMap<>();
 		
-	ProxyObject(Class<? extends ProxyInterface> proxyInterface) {
+	ProxyObject(Class<? extends ProxyInterface> proxyInterface, ProxyTemplate template) {
 		this.proxyInterface = proxyInterface;
-		
-		ProxyTemplate template = ProxyInterfaceCache.validateProxyInterface_Lock(proxyInterface);
 		
 		// Instantiate primitives
 		for (String key : templateKeys()) {
