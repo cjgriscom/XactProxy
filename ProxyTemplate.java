@@ -195,7 +195,7 @@ final class ProxyTemplate {
 		for (Class<?> c : proxyInterface.getInterfaces()) {
 			if (ProxyInterfaceCache.hasCachedProxyInterface(c)) {
 				// TODO is there any redundant work here?
-				ProxyTemplate subtemplate = ProxyInterfaceCache.validateProxyInterface(c);
+				ProxyTemplate subtemplate = ProxyInterfaceCache.validateProxyInterface_NoLock(c);
 				datatypes.putAll(subtemplate.datatypes);
 				setters.putAll(subtemplate.setters);
 				references.add(c);
@@ -245,7 +245,7 @@ final class ProxyTemplate {
 			// Empty proxies aren't required to declare ReadOnly so we must check parents
 			for (Class<?> c : subProxy.getInterfaces()) {
 				if (ProxyInterfaceCache.hasCachedProxyInterface(c)) {
-					ProxyTemplate nextSubtemplate = ProxyInterfaceCache.validateProxyInterface(c);
+					ProxyTemplate nextSubtemplate = ProxyInterfaceCache.validateProxyInterface_NoLock(c);
 					checkReadOnlyAndOrderedInheritanceChain(thisProxy, c, nextSubtemplate);
 				}
 			}
@@ -263,7 +263,7 @@ final class ProxyTemplate {
 					throw new IllegalArgumentException("Reference loop for " + t.proxyInterface + " detected in " + owner);
 				} else {
 					recursiveReferenceLoopCheck(
-							ProxyInterfaceCache.validateProxyInterface(t.proxyInterface)
+							ProxyInterfaceCache.validateProxyInterface_NoLock(t.proxyInterface)
 							.datatypes.values(), owner);
 				}
 			}
@@ -331,10 +331,7 @@ final class ProxyTemplate {
 		} else {
 			for (Class<?> i : param.getInterfaces()) {
 				if (i == ProxyInterface.class) {
-					if (ProxyInterfaceCache.validationInProgress(param)) {
-						throw new IllegalArgumentException("Reference loop for " + param + " detected in " + owner);
-					}
-					ProxyInterfaceCache.validateProxyInterface(param);
+					ProxyInterfaceCache.validateProxyInterface_NoLock_CheckForLoop(param, owner);
 					return new ProxyDatatype(Base.ProxyInterface, dims, (Class<? extends ProxyInterface>) param);
 				}
 			}

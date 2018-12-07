@@ -18,7 +18,7 @@ class ProxyObject implements InvocationHandler, Serializable {
 	@SuppressWarnings("unchecked")
 	static <T extends ProxyInterface> T newInstance(Class<T> proxyInterface) throws IllegalArgumentException {
 		// Ensure interface follows rules while caching it
-		ProxyInterfaceCache.validateProxyInterface(proxyInterface);
+		ProxyInterfaceCache.validateProxyInterface_Lock(proxyInterface);
 		
 		return (T) Proxy.newProxyInstance(
 				proxyInterface.getClassLoader(), 
@@ -33,7 +33,7 @@ class ProxyObject implements InvocationHandler, Serializable {
 	ProxyObject(Class<? extends ProxyInterface> proxyInterface) {
 		this.proxyInterface = proxyInterface;
 		
-		ProxyTemplate template = ProxyInterfaceCache.validateProxyInterface(proxyInterface);
+		ProxyTemplate template = ProxyInterfaceCache.validateProxyInterface_Lock(proxyInterface);
 		
 		// Instantiate primitives
 		for (String key : templateKeys()) {
@@ -61,7 +61,7 @@ class ProxyObject implements InvocationHandler, Serializable {
 	private transient ProxyTemplate cachedTemplate = null;
 	ProxyTemplate getTemplate() {
 		if (cachedTemplate == null) {
-			cachedTemplate = ProxyInterfaceCache.validateProxyInterface(proxyInterface);
+			cachedTemplate = ProxyInterfaceCache.validateProxyInterface_Lock(proxyInterface);
 		}
 		return cachedTemplate;
 	}
