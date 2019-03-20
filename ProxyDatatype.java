@@ -198,8 +198,13 @@ final class ProxyDatatype {
 			String name,
 			MapContext mapctx) throws IllegalArgumentException {
 		
-		if (converter.isNull(mapctx, name)) return null;
-		else if (dimensions == 0) {
+		if (converter.isNull(mapctx, name)) {
+			if (this.isPrimitive() && this.dimensions == 0) {
+				return this.defaultValue;
+			} else {
+				return null;
+			}
+		} else if (dimensions == 0) {
 			return base.unwrapFlatMap.unwrapFlatMap(converter, mapctx, name, this);
 		} else {
 			return createUnwrappedNDArray(converter, converter.getArray(getNDClass(dimensions-1), mapctx, name));
