@@ -1,15 +1,12 @@
 package com.xactmetal.abstraction.proxy.preprocessors;
 
-import java.lang.reflect.Modifier;
+import static com.xactmetal.abstraction.proxy.preprocessors.Util.*;
 
-import com.xactmetal.abstraction.proxy.ProxyInterface;
-import com.xactmetal.abstraction.proxy.annotations.ReadOnly;
 import com.xactmetal.abstraction.proxy.annotations.SetterArguments;
 
 import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.CtMethod;
-import javassist.NotFoundException;
 import javassist.bytecode.AnnotationsAttribute;
 import javassist.bytecode.ClassFile;
 import javassist.bytecode.ConstPool;
@@ -23,43 +20,7 @@ import nl.topicus.plugins.maven.javassist.TransformationException;
 
 public class AddNamedSetterArguments extends ClassTransformer {
 	
-	private boolean isProxyInterface(CtClass classToTransform) {
-		boolean isProxyInterface = false;
-		try {
-			for (CtClass c : classToTransform.getInterfaces()) {
-				if (c.getName().equals(ProxyInterface.class.getCanonicalName())) isProxyInterface = true;
-			}
-		} catch (NotFoundException e) {
-			log(classToTransform, "NotFoundException");
-		}
-		
-		return isProxyInterface;
-	}
-	
-	private boolean isReadOnly(CtClass classToTransform) {
-		return classToTransform.hasAnnotation(ReadOnly.class);
-	}
-	
-	private boolean isProxySetterMethod(CtClass classToTransform, CtMethod m) {
-		
-		try {
-			if (m.getReturnType().equals(CtClass.voidType) || m.getReturnType().equals(classToTransform)) {
-				// This is a setter method return type
-				
-				if (Modifier.isAbstract(m.getModifiers())) {
-					// Is an abstract method
-					return true;
-				}
-			}
-		} catch (NotFoundException e) {
-			log(classToTransform, m, "NotFoundException");
-		}
-		return false;
-	}
-	
-	private boolean hasSetterArgumentsAnnotation(CtClass classToTransform, CtMethod m) {
-		return m.hasAnnotation(SetterArguments.class);
-	}
+	private static final String LOG_H = "[AddNamedSetterArguments] ";
 	
 	private boolean addSetterArgumentsAnnotation(CtClass classToTransform, CtMethod m) {
 		ClassFile classFile = classToTransform.getClassFile();
@@ -73,7 +34,7 @@ public class AddNamedSetterArguments extends ClassTransformer {
 		for (int i = 0; i < nameArrayValues.length; i++) {
 			int frameWithNameAtConstantPool = nameTable.name(i);
 			String variableName = m.getMethodInfo().getConstPool().getUtf8Info(frameWithNameAtConstantPool);
-			log(classToTransform, m, "  Adding " + variableName);
+			log(LOG_H, classToTransform, m, "  Adding " + variableName);
 			nameArrayValues[i] = new StringMemberValue(variableName, cp);
 		}
 		nameArray.setValue(nameArrayValues);
@@ -89,22 +50,22 @@ public class AddNamedSetterArguments extends ClassTransformer {
 		// Verify that it's a ProxyInterface and not read only
 		if (
 				classToTransform.isInterface() && 
-				isProxyInterface(classToTransform) && 
-				!isReadOnly(classToTransform)
+				isProxyInterface(LOG_H, classToTransform) && 
+				!isReadOnly(LOG_H, classToTransform)
 				) { 
 			
 			for (CtMethod m : classToTransform.getMethods()) {
 				if (	m.getDeclaringClass().equals(classToTransform) && // Declared in proxy itself
-						isProxySetterMethod(classToTransform, m) // Has all correct attributes of a setter
+						isProxySetterMethod(LOG_H, classToTransform, m) // Has all correct attributes of a setter
 						) {
 					
 					if (hasSetterArgumentsAnnotation(classToTransform, m)) {
 						// Annotation already exists
-						log(classToTransform, m, "Skipped");
+						log(LOG_H, classToTransform, m, "Skipped");
 					} else {
 						// Adding annotation
 						if (addSetterArgumentsAnnotation(classToTransform, m)) {
-							log(classToTransform, m, "Added SetterArguments annotations");
+							log(LOG_H, classToTransform, m, "Added SetterArguments annotations");
 						}
 					}
 					
@@ -113,21 +74,4 @@ public class AddNamedSetterArguments extends ClassTransformer {
 			}
 		}
 	}
-	
-	
-	
-	private static final String LOG_H = "[AddNamedSetterArguments] ";
-	
-	private void log(CtClass classToTransform, CtMethod m, String line) {
-		log(classToTransform.getName() + " - " + m.getName() + ": " + line);
-	}
-	
-	private void log(CtClass classToTransform, String line) {
-		log(classToTransform.getName() + ": " + line);
-	}
-	
-	private void log(String line) {
-		System.out.println(LOG_H + line);
-	}
-	
 }
