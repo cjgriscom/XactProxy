@@ -7,6 +7,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.TreeMap;
@@ -131,6 +132,8 @@ class ProxyObject implements InvocationHandler, Serializable {
 					if (otherObj != null) return false;
 				} else if (otherObj == null) {
 					if (thisObj != null) return false;
+				} else if (thisObj.getClass().isArray() && otherObj.getClass().isArray()) {
+					return Arrays.deepEquals((Object[])thisObj, (Object[])otherObj);
 				} else {
 					if (!thisObj.equals(otherObj)) return false;
 				}
