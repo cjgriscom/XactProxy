@@ -141,7 +141,7 @@ class ProxyObject implements InvocationHandler, Serializable {
 					if (otherObj != null) return false;
 				} else if (otherObj == null) {
 					if (thisObj != null) return false;
-				} else if (thisObj.getClass().isArray() && otherObj.getClass().isArray()) {
+				} else if (thisObj instanceof Object[] && otherObj instanceof Object[]) {
 					return Arrays.deepEquals((Object[])thisObj, (Object[])otherObj);
 				} else {
 					if (!thisObj.equals(otherObj)) return false;
