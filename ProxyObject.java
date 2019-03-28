@@ -121,10 +121,19 @@ class ProxyObject implements InvocationHandler, Serializable {
 				return out.toString();
 			}
 		} else if (numParams == 1 && name.equals("equals") && m.getParameterTypes()[0] == Object.class) {
+			// Null argument and this is not null
 			if (args[0] == null) return false;
-			if (args[0].getClass() != proxyInterface) return false;
+			// This is a proxy and other is not a proxy
+			if (!Proxy.isProxyClass(args[0].getClass())) return false;
+			
+			InvocationHandler invok = Proxy.getInvocationHandler(args[0]);
+			
+			// Other proxy is not part of ProxyInterface
+			if (! (invok instanceof ProxyObject)) return false;
+			
 			Iterator<Object> ti = fields.values().iterator();
-			Iterator<Object> oi = ((ProxyObject)Proxy.getInvocationHandler(args[0])).fields.values().iterator();
+			Iterator<Object> oi = ((ProxyObject)invok).fields.values().iterator();
+			
 			while(ti.hasNext() && oi.hasNext()){
 				Object thisObj = ti.next();
 				Object otherObj = oi.next();
