@@ -36,6 +36,10 @@ final class DataConverters {
 		}
 	}
 	
+	static interface EqualsFunction {
+		boolean equalsFunction(Object o0, Object o1);
+	}
+	
 	static interface UnwrapFlatMap {
 		<MapContext, ArrContext> Object unwrapFlatMap(
 				DeconversionHandler<MapContext, ArrContext> converter, MapContext src, String name, ProxyDatatype type);

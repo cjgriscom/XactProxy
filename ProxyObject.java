@@ -7,9 +7,9 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Map.Entry;
 import java.util.TreeMap;
 
 class ProxyObject implements InvocationHandler, Serializable {
@@ -130,21 +130,19 @@ class ProxyObject implements InvocationHandler, Serializable {
 			
 			// Other proxy is not part of ProxyInterface
 			if (! (invok instanceof ProxyObject)) return false;
+
+			Iterator<Entry<String, ProxyDatatype>> dti = getTemplate().datatypes.entrySet().iterator();
 			
-			Iterator<Object> ti = fields.values().iterator();
-			Iterator<Object> oi = ((ProxyObject)invok).fields.values().iterator();
-			
-			while(ti.hasNext() && oi.hasNext()){
-				Object thisObj = ti.next();
-				Object otherObj = oi.next();
+			while (dti.hasNext()){
+				Entry<String, ProxyDatatype> entry = dti.next();
+				Object thisObj = fields.get(entry.getKey());
+				Object otherObj = ((ProxyObject)invok).fields.get(entry.getKey());
 				if (thisObj == null) {
 					if (otherObj != null) return false;
 				} else if (otherObj == null) {
 					if (thisObj != null) return false;
-				} else if (thisObj instanceof Object[] && otherObj instanceof Object[]) {
-					return Arrays.deepEquals((Object[])thisObj, (Object[])otherObj);
 				} else {
-					if (!thisObj.equals(otherObj)) return false;
+					if (!entry.getValue().equalsOther(thisObj, otherObj)) return false;
 				}
 			}
 			return true;
