@@ -15,8 +15,6 @@ import javassist.bytecode.annotation.Annotation;
 import javassist.bytecode.annotation.ArrayMemberValue;
 import javassist.bytecode.annotation.MemberValue;
 import javassist.bytecode.annotation.StringMemberValue;
-import nl.topicus.plugins.maven.javassist.ClassTransformer;
-import nl.topicus.plugins.maven.javassist.TransformationException;
 
 public class AddNamedSetterArguments extends ClassTransformer {
 	
@@ -46,7 +44,7 @@ public class AddNamedSetterArguments extends ClassTransformer {
 	}
 	
 	@Override
-	public void applyTransformations(ClassPool classPool, CtClass classToTransform) throws TransformationException {
+	public void applyTransformations(ClassPool classPool, CtClass classToTransform) {
 		// Verify that it's a ProxyInterface and not read only
 		if (
 				classToTransform.isInterface() && 
