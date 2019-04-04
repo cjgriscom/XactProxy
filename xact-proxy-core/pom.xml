@@ -4,9 +4,9 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>com.xactmetal</groupId>
+		<groupId>com.xactmetal.libraries</groupId>
 		<artifactId>xact-proxy</artifactId>
-		<version>0.0.1</version>
+		<version>1.0.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 

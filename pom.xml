@@ -4,10 +4,10 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>com.xactmetal</groupId>
+	<groupId>com.xactmetal.libraries</groupId>
 	<artifactId>xact-proxy</artifactId>
 	<packaging>pom</packaging>
-	<version>0.0.1</version>
+	<version>1.0.0</version>
 	<name>Xact Proxy Library Parent</name>
 
 	<url>http://xactmetal.com</url>
@@ -52,12 +52,12 @@
 			</dependency>
 
 			<dependency>
-				<groupId>com.xactmetal</groupId>
+				<groupId>com.xactmetal.libraries</groupId>
 				<artifactId>xact-proxy-core</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>com.xactmetal</groupId>
+				<groupId>com.xactmetal.libraries</groupId>
 				<artifactId>xact-proxy-transform-maven</artifactId>
 				<version>${project.version}</version>
 			</dependency>
