@@ -26,6 +26,8 @@ class ProxyObject implements InvocationHandler, Serializable {
 				new Class<?>[] {proxyInterface},
 				new ProxyObject(proxyInterface, template));
 	}
+
+	private transient ProxyTemplate template = null;
 	
 	final Class<? extends ProxyInterface> proxyInterface;
 	
@@ -33,6 +35,7 @@ class ProxyObject implements InvocationHandler, Serializable {
 		
 	ProxyObject(Class<? extends ProxyInterface> proxyInterface, ProxyTemplate template) {
 		this.proxyInterface = proxyInterface;
+		this.template = template;
 		
 		// Instantiate primitives
 		for (String key : templateKeys()) {
@@ -57,12 +60,11 @@ class ProxyObject implements InvocationHandler, Serializable {
 		return fields.get(name);
 	}
 	
-	private transient ProxyTemplate cachedTemplate = null;
 	ProxyTemplate getTemplate() {
-		if (cachedTemplate == null) {
-			cachedTemplate = ProxyInterfaceCache.validateProxyInterface_Lock(proxyInterface);
+		if (template == null) {
+			template = ProxyInterfaceCache.validateProxyInterface_Lock(proxyInterface);
 		}
-		return cachedTemplate;
+		return template;
 	}
 	
 	ProxyDatatype getDatatypeFromDatatypeConverterInternal(String name) {
