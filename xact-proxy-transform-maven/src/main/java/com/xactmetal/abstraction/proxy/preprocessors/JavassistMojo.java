@@ -6,9 +6,16 @@ import java.io.BufferedOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -24,7 +31,6 @@ import org.apache.maven.project.MavenProject;
 import org.sonatype.plexus.build.incremental.BuildContext;
 
 import com.google.common.collect.Lists;
-import com.xactmetal.abstraction.proxy.preprocessors.ClassTransformer;
 
 import javassist.ClassPool;
 import javassist.CtClass;
@@ -120,25 +126,42 @@ public class JavassistMojo extends AbstractMojo {
 			throw new MojoExecutionException(errors + " errors found during transformation.");
 	}
 
-	public void writeFile(CtClass candidateClass, String targetDirectory) throws Exception {
+	public void writeFile(CtClass candidateClass, String target) throws Exception {
 		candidateClass.getClassFile().compact();
 		candidateClass.rebuildClassFile();
-
+		
 		String classname = candidateClass.getName();
-		String filename = targetDirectory + File.separatorChar + classname.replace('.', File.separatorChar) + ".class";
-		int pos = filename.lastIndexOf(File.separatorChar);
-		if (pos > 0) {
-			String dir = filename.substring(0, pos);
-			if (!dir.equals(".")) {
-				File outputDir = new File(dir);
-				outputDir.mkdirs();
-				buildContext.refresh(outputDir);
+		String filename = classname.replace('.', File.separatorChar) + ".class";
+		
+		File targetFile = new File(target);
+		
+		if (targetFile.isDirectory()) { // Class directory
+			String fullpath = target + File.separatorChar + filename;
+			int pos = fullpath.lastIndexOf(File.separatorChar);
+			if (pos > 0) {
+				String dir = fullpath.substring(0, pos);
+				if (!dir.equals(".")) {
+					File outputDir = new File(dir);
+					outputDir.mkdirs();
+					buildContext.refresh(outputDir);
+				}
+			}
+			try (DataOutputStream out = new DataOutputStream(
+					new BufferedOutputStream(buildContext.newFileOutputStream(new File(fullpath))))) {
+				candidateClass.toBytecode(out);
+			}
+		} else { // JAR
+			URI uri = URI.create("jar:" + targetFile.toURI());
+
+			try (FileSystem zipfs = FileSystems.newFileSystem(uri, Collections.emptyMap())) {
+				Path pathInZipfile = zipfs.getPath(filename);
+				candidateClass.toBytecode(
+						new DataOutputStream(
+						new BufferedOutputStream(
+								Files.newOutputStream(pathInZipfile, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE))));
 			}
 		}
-		try (DataOutputStream out = new DataOutputStream(
-				new BufferedOutputStream(buildContext.newFileOutputStream(new File(filename))))) {
-			candidateClass.toBytecode(out);
-		}
+
 	}
 
 	private ClassFileIterator createClassNameIterator(final String classPath) {
