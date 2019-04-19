@@ -62,6 +62,20 @@ final class ProxyInterfaceCache {
 		return false;
 	}
 	
+	private static boolean containsDefaultOverride(Class<?> proxyInterface, String name, Class<?>[] params) {
+		search: for (Method m : proxyInterface.getDeclaredMethods()) {
+			System.out.println("       " + proxyInterface.getSimpleName() + m.getName());
+			if (!m.isDefault()) continue;
+			if (!m.getName().equals(name)) continue;
+			if (m.getParameterTypes().length != params.length) continue;
+			for (int i = 0; i < params.length; i++) {
+				if (!params[i].equals(m.getParameterTypes()[i])) continue search;
+			}
+			return true;
+		}
+		return false;
+	}
+	
 	private static void insert(Class<?> proxyInterface) {
 		validatingClasses.add(proxyInterface); // Use to detect loops
 		
@@ -73,7 +87,10 @@ final class ProxyInterfaceCache {
 			} else {
 				// Special exception for interfaces with only static and default methods
 				for (Method m : proxyInterface.getDeclaredMethods()) {
-					if (m.isDefault()) continue;
+					if (m.isDefault()) {
+						if (containsDefaultOverride(proxyInterface, m.getName(), m.getParameterTypes())) continue;
+						throw new IllegalArgumentException(m.toGenericString() + " is not overridden in " + proxyInterface);
+					}
 					if (Modifier.isStatic(m.getModifiers())) continue;
 					
 					throw new IllegalArgumentException(proxyInterface + " does not extend ProxyInterface");
