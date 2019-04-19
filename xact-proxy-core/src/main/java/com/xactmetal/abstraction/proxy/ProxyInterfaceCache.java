@@ -55,25 +55,29 @@ final class ProxyInterfaceCache {
 		validateProxyInterface_NoLock(proxyInterface);
 	}
 	
+	private static boolean extendsProxyInterface(Class<?> interfaceClass) {
+		for (Class<?> c : interfaceClass.getInterfaces()) {
+			if (c.equals(ProxyInterface.class)) return true;
+		}
+		return false;
+	}
+	
 	private static void insert(Class<?> proxyInterface) {
 		validatingClasses.add(proxyInterface); // Use to detect loops
 		
-		boolean foundProxyInterface = false;
 		for (Class<?> c : proxyInterface.getInterfaces()) {
 			if (c.equals(ProxyInterface.class)) {
-				foundProxyInterface = true;
-			} else {
+				// 
+			} else if (extendsProxyInterface(c)) {
 				validateProxyInterface_NoLock(c);
-			}
-		}
-		
-		if (!foundProxyInterface) {
-			// Special exception for interfaces with only static and default methods
-			for (Method m : proxyInterface.getDeclaredMethods()) {
-				if (m.isDefault()) continue;
-				if (Modifier.isStatic(m.getModifiers())) continue;
-				
-				throw new IllegalArgumentException(proxyInterface + " does not extend ProxyInterface");
+			} else {
+				// Special exception for interfaces with only static and default methods
+				for (Method m : proxyInterface.getDeclaredMethods()) {
+					if (m.isDefault()) continue;
+					if (Modifier.isStatic(m.getModifiers())) continue;
+					
+					throw new IllegalArgumentException(proxyInterface + " does not extend ProxyInterface");
+				}
 			}
 		}
 		
