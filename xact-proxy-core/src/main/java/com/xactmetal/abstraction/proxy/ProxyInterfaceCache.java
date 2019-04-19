@@ -86,14 +86,14 @@ final class ProxyInterfaceCache {
 				validateProxyInterface_NoLock(c);
 			} else {
 				// Special exception for interfaces with only static and default methods
-				for (Method m : proxyInterface.getDeclaredMethods()) {
+				for (Method m : c.getDeclaredMethods()) {
 					if (m.isDefault()) {
 						if (containsDefaultOverride(proxyInterface, m.getName(), m.getParameterTypes())) continue;
 						throw new IllegalArgumentException(m.toGenericString() + " is not overridden in " + proxyInterface);
 					}
 					if (Modifier.isStatic(m.getModifiers())) continue;
 					
-					throw new IllegalArgumentException(proxyInterface + " does not extend ProxyInterface");
+					throw new IllegalArgumentException(proxyInterface + " subclass " + c + " does not extend ProxyInterface");
 				}
 			}
 		}
