@@ -64,7 +64,6 @@ final class ProxyInterfaceCache {
 	
 	private static boolean containsDefaultOverride(Class<?> proxyInterface, String name, Class<?>[] params) {
 		search: for (Method m : proxyInterface.getDeclaredMethods()) {
-			System.out.println("       " + proxyInterface.getSimpleName() + m.getName());
 			if (!m.isDefault()) continue;
 			if (!m.getName().equals(name)) continue;
 			if (m.getParameterTypes().length != params.length) continue;

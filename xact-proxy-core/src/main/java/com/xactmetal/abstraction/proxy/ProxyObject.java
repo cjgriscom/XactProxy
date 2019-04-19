@@ -84,9 +84,18 @@ class ProxyObject implements InvocationHandler, Serializable {
 		final ArrayList<String> setter;
 		
 		if (m.isDefault()) {
-			return getTemplate().defaults.get(m.toGenericString())
+			String genString = m.toGenericString();
+			Method staticHandle = getTemplate().defaultStaticHandles.get(genString);
+			if (staticHandle != null) {
+				Object[] staticArgs = new Object[args==null?1:args.length + 1];
+				staticArgs[staticArgs.length - 1] = proxy;
+				if (args != null) System.arraycopy(args, 0, staticArgs, 1, args==null?0:args.length);
+				return staticHandle.invoke(null, staticArgs);
+			} else {
+				return getTemplate().defaults.get(genString)
 					.bindTo(proxy)
 					.invokeWithArguments(args);
+			}
 		} else if ((setter = getTemplate().setters.get(m.toGenericString())) != null && setter.size() == args.length) {
 			for (int i = 0; i < args.length; i++) {
 				fields.put(setter.get(i), args[i]);
@@ -151,6 +160,7 @@ class ProxyObject implements InvocationHandler, Serializable {
 		} else if (numParams == 1 && name.equals("convert")) {
 			return ProxyDatatype.convertFromProxyInterface((ConversionHandler<?,?>) args[0], this);
 		}
-		throw new UnsupportedOperationException();
+		
+		throw new UnsupportedOperationException("Unknown method " + name + " in " + this.proxyInterface.getName());
 	}
 }

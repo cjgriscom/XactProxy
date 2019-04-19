@@ -61,9 +61,23 @@ final class ProxyTemplate {
 	// Maps setter method name to the serviced fields
 	final TreeMap<String, ArrayList<String>> setters = new TreeMap<>();
 	final TreeMap<String, MethodHandle> defaults = new TreeMap<>();
+	final TreeMap<String, Method> defaultStaticHandles = new TreeMap<>();
 	final boolean empty;
 	final boolean readOnly;
 	final boolean ordered;
+	
+	private Method findStaticMethod(Class<?> proxyInterface, String name, Class<?>[] params) {
+		search: for (Method m : proxyInterface.getDeclaredMethods()) {
+			if (!Modifier.isStatic(m.getModifiers())) continue;
+			if (!m.getName().equals(name)) continue;
+			if (m.getParameterTypes().length != params.length) continue;
+			for (int i = 0; i < params.length; i++) {
+				if (!params[i].equals(m.getParameterTypes()[i])) continue search;
+			}
+			return m;
+		}
+		return null;
+	}
 	
 	ProxyTemplate(Class<?> proxyInterface) throws IllegalArgumentException {
 		boolean tmpEmpty = true; // Start assuming empty
@@ -79,15 +93,27 @@ final class ProxyTemplate {
 			if (Modifier.isStatic(meth.getModifiers())) { // Ignore interface static methods
 				continue;
 			} else if (meth.isDefault()) {
-				// Default methods must be invoked with a special handler
-				try {
-					MethodHandle h = lookupPrivConst.newInstance(proxyInterface, MethodHandles.Lookup.PRIVATE)
-						.unreflectSpecial(meth, proxyInterface);
-					
-					defaults.put(meth.toGenericString(), h);
-				} catch (Exception e) {
-					throw new RuntimeException(e);
+				Class<?>[] types = new Class<?>[meth.getParameterTypes().length + 1];
+				types[types.length - 1] = proxyInterface;
+				System.arraycopy(meth.getParameterTypes(), 0, types, 1, meth.getParameterTypes().length);
+				// Check if GenerateDefaultHandles was invoked
+				Method staticHandle = findStaticMethod(proxyInterface, "_default_" + meth.getName(), types);
+				if (staticHandle != null) {
+					// Use static handle
+					defaultStaticHandles.put(meth.toGenericString(), staticHandle);
+				} else {
+					// Default methods must be invoked with a special handler
+					try {
+						MethodHandle h = lookupPrivConst.newInstance(proxyInterface, MethodHandles.Lookup.PRIVATE)
+							.unreflectSpecial(meth, proxyInterface);
+						
+						defaults.put(meth.toGenericString(), h);
+					} catch (Exception e) {
+						throw new RuntimeException(e);
+					}
 				}
+				
+				
 			} else if (meth.getParameterCount() > 0 && (meth.getReturnType() == void.class || meth.getReturnType() == proxyInterface)) {
 				// Setter
 				if (readOnly) {
@@ -201,6 +227,9 @@ final class ProxyTemplate {
 				references.add(c);
 				references.addAll(subtemplate.references);
 				// Add inherited defaults without replacing any
+				for (Entry<String, Method> def : subtemplate.defaultStaticHandles.entrySet()) {
+					if (!defaultStaticHandles.containsKey(def.getKey())) defaultStaticHandles.put(def.getKey(), def.getValue());
+				}
 				for (Entry<String, MethodHandle> def : subtemplate.defaults.entrySet()) {
 					if (!defaults.containsKey(def.getKey())) defaults.put(def.getKey(), def.getValue());
 				}

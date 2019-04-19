@@ -48,10 +48,13 @@ public class JavassistMojo extends AbstractMojo {
 	@Parameter(property = "project", defaultValue = "${project}")
 	private MavenProject project;
 
-	@Parameter(property = "addNamedSetterArguments", required = true)
+	@Parameter(property = "addNamedSetterArguments", required = false)
 	private boolean addNamedSetterArguments;
 
-	@Parameter(property = "generateConcreteImplementations", required = true)
+	@Parameter(property = "generateDefaultHandles", required = false)
+	private boolean generateDefaultHandles;
+
+	@Parameter(property = "generateConcreteImplementations", required = false)
 	private boolean generateConcreteImplementations;
 
 	@Parameter(property = "processInclusions", required = true)
@@ -68,8 +71,9 @@ public class JavassistMojo extends AbstractMojo {
 		try {
 			final List<String> classpathElements = getCompileClasspathElements();
 			loadClassPath(originalContextClassLoader, generateClassPathUrls(classpathElements));
-			transform(new AddNamedSetterArguments(), classpathElements);
-			transform(new GenerateConcreteImplementations(), classpathElements);
+			if (addNamedSetterArguments) transform(new AddNamedSetterArguments(), classpathElements);
+			if (generateDefaultHandles) transform(new GenerateDefaultHandles(), classpathElements);
+			if (generateConcreteImplementations) transform(new GenerateConcreteImplementations(), classpathElements);
 		} catch (DependencyResolutionRequiredException e) {
 			throw new MojoExecutionException(e.getMessage(), e);
 		} finally {
