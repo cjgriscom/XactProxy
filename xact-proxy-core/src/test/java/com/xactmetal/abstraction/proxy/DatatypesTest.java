@@ -13,8 +13,8 @@ import com.xactmetal.abstraction.proxy.testclasses.DeepArrayOfDeepArrayPI;
 import com.xactmetal.abstraction.proxy.testclasses.DeepArrayPI;
 import com.xactmetal.abstraction.proxy.testutil.Util;
 
-public class ProxyTest {
-	Logger logger = Logger.getLogger("ProxyInterfaceTests");
+public class DatatypesTest {
+	Logger logger = Logger.getLogger("DatatypesTest");
 	
 	//@BeforeEach
 	//void beforeEachTest() {
