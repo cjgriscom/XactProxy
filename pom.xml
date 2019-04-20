@@ -15,6 +15,7 @@
 	<modules>
 		<module>xact-proxy-core</module>
 		<module>xact-proxy-transform-maven</module>
+		<module>xact-proxy-tests</module>
 	</modules>
 
 	<properties>
@@ -60,6 +61,12 @@
 				<groupId>com.xactmetal.libraries</groupId>
 				<artifactId>xact-proxy-transform-maven</artifactId>
 				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.xactmetal.libraries</groupId>
+				<artifactId>xact-proxy-tests</artifactId>
+				<version>${project.version}</version>
+				<scope>test</scope>
 			</dependency>
 
 			<dependency>
