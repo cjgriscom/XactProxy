@@ -101,7 +101,7 @@ class ProxyObject implements InvocationHandler, Serializable {
 				fields.put(setter.get(i), args[i]);
 			}
 			
-			if (m.getReturnType() == proxyInterface) {
+			if (m.getReturnType().isAssignableFrom(proxyInterface)) {
 				return proxy;
 			} else {
 				return null;
