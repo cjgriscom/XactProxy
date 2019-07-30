@@ -10,10 +10,10 @@
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
-	<artifactId>xact-proxy-tests</artifactId>
+	<artifactId>xact-proxy-tests-concrete</artifactId>
 	<packaging>jar</packaging>
 
-	<name>Xact Proxy Library Tests</name>
+	<name>Xact Proxy Library Tests With GenerateConcreteImplementations</name>
 	<url>http://xactmetal.com</url>
 
 	<properties>
@@ -27,8 +27,9 @@
 		</dependency>
 		<dependency>
 			<groupId>com.xactmetal.libraries</groupId>
-			<artifactId>xact-proxy-transform-maven</artifactId>
-			<scope>provided</scope>
+			<artifactId>xact-proxy-core</artifactId>
+			<version>[1.0.0,)</version>
+			<type>test-jar</type>
 		</dependency>
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
@@ -54,21 +55,38 @@
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<configuration>
-					<source>1.8</source>
-					<target>1.8</target>
-					<compilerArgument>-parameters</compilerArgument> <!-- Req'd for ProxyInterface reflection -->
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-jar-plugin</artifactId>
-				<version>3.1.1</version>
+				<artifactId>maven-dependency-plugin</artifactId>
 				<executions>
 					<execution>
+						<id>unpack-dependencies</id>
+						<phase>compile</phase>
 						<goals>
-							<goal>test-jar</goal>
+							<goal>unpack-dependencies</goal>
+						</goals>
+						<configuration>
+							<includeGroupIds>com.xactmetal.libraries</includeGroupIds>
+							<outputDirectory>${project.build.directory}/classes</outputDirectory>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>com.xactmetal.libraries</groupId>
+				<artifactId>xact-proxy-transform-maven</artifactId>
+				<goals>
+					<goal>javassist</goal>
+				</goals>
+				<configuration>
+					<generateConcreteImplementations>true</generateConcreteImplementations>
+					<processInclusions>
+						<inclusion>com.xactmetal</inclusion>
+					</processInclusions>
+				</configuration>
+				<executions>
+					<execution>
+						<phase>compile</phase>
+						<goals>
+							<goal>javassist</goal>
 						</goals>
 					</execution>
 				</executions>
@@ -77,6 +95,9 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
 				<version>2.22.1</version>
+				<configuration>
+					<testClassesDirectory>${project.build.outputDirectory}</testClassesDirectory>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>
