@@ -84,19 +84,18 @@ class ProxyObject implements InvocationHandler, Serializable {
 		final ArrayList<String> setter;
 		
 		if (m.isDefault()) {
-			String genString = m.toGenericString();
-			Method staticHandle = getTemplate().defaultStaticHandles.get(genString);
+			Method staticHandle = getTemplate().defaultStaticHandles.get(m);
 			if (staticHandle != null) {
 				Object[] staticArgs = new Object[args==null?1:args.length + 1];
 				staticArgs[staticArgs.length - 1] = proxy;
 				if (args != null) System.arraycopy(args, 0, staticArgs, 1, args==null?0:args.length);
 				return staticHandle.invoke(null, staticArgs);
 			} else {
-				return getTemplate().defaults.get(genString)
+				return getTemplate().defaults.get(m)
 					.bindTo(proxy)
 					.invokeWithArguments(args);
 			}
-		} else if ((setter = getTemplate().setters.get(m.toGenericString())) != null && setter.size() == args.length) {
+		} else if ((setter = getTemplate().setters.get(m)) != null && setter.size() == args.length) {
 			for (int i = 0; i < args.length; i++) {
 				fields.put(setter.get(i), args[i]);
 			}

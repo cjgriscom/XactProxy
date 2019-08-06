@@ -9,6 +9,7 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map.Entry;
 import java.util.TreeMap;
@@ -58,10 +59,10 @@ final class ProxyTemplate {
 	// If length != inserted at end of constructor, there is a hole
 	// If an element already exists in the list, there's a collision
 	final ArrayList<String> orderedDatatypeKeys = new ArrayList<String>();
-	// Maps setter method name to the serviced fields
-	final TreeMap<String, ArrayList<String>> setters = new TreeMap<>();
-	final TreeMap<String, MethodHandle> defaults = new TreeMap<>();
-	final TreeMap<String, Method> defaultStaticHandles = new TreeMap<>();
+	// Maps setter method handle to the serviced fields
+	final HashMap<Method, ArrayList<String>> setters = new HashMap<>();
+	final HashMap<Method, MethodHandle> defaults = new HashMap<>();
+	final HashMap<Method, Method> defaultStaticHandles = new HashMap<>();
 	final boolean empty;
 	final boolean readOnly;
 	final boolean ordered;
@@ -100,14 +101,14 @@ final class ProxyTemplate {
 				Method staticHandle = findStaticMethod(proxyInterface, "_default_" + meth.getName(), types);
 				if (staticHandle != null) {
 					// Use static handle
-					defaultStaticHandles.put(meth.toGenericString(), staticHandle);
+					defaultStaticHandles.put(meth, staticHandle);
 				} else {
 					// Default methods must be invoked with a special handler
 					try {
 						MethodHandle h = lookupPrivConst.newInstance(proxyInterface, MethodHandles.Lookup.PRIVATE)
 							.unreflectSpecial(meth, proxyInterface);
 						
-						defaults.put(meth.toGenericString(), h);
+						defaults.put(meth, h);
 					} catch (Exception e) {
 						throw new RuntimeException(e);
 					}
@@ -153,7 +154,7 @@ final class ProxyTemplate {
 							" is a reserved word in " + proxyInterface.getName());
 					serviced.add(name);
 				}
-				setters.put(meth.toGenericString(), serviced);
+				setters.put(meth, serviced);
 			} else {
 				// Getter
 				if (meth.getParameterCount() > 0) 
@@ -227,10 +228,10 @@ final class ProxyTemplate {
 				references.add(c);
 				references.addAll(subtemplate.references);
 				// Add inherited defaults without replacing any
-				for (Entry<String, Method> def : subtemplate.defaultStaticHandles.entrySet()) {
+				for (Entry<Method, Method> def : subtemplate.defaultStaticHandles.entrySet()) {
 					if (!defaultStaticHandles.containsKey(def.getKey())) defaultStaticHandles.put(def.getKey(), def.getValue());
 				}
-				for (Entry<String, MethodHandle> def : subtemplate.defaults.entrySet()) {
+				for (Entry<Method, MethodHandle> def : subtemplate.defaults.entrySet()) {
 					if (!defaults.containsKey(def.getKey())) defaults.put(def.getKey(), def.getValue());
 				}
 				
