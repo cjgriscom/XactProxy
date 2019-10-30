@@ -67,6 +67,8 @@ final class ProxyTemplate {
 	final boolean readOnly;
 	final boolean ordered;
 	
+	final int titleHashCode;
+	
 	private Method findStaticMethod(Class<?> proxyInterface, String name, Class<?>[] params) {
 		search: for (Method m : proxyInterface.getDeclaredMethods()) {
 			if (!Modifier.isStatic(m.getModifiers())) continue;
@@ -82,6 +84,8 @@ final class ProxyTemplate {
 	
 	ProxyTemplate(Class<?> proxyInterface) throws IllegalArgumentException {
 		boolean tmpEmpty = true; // Start assuming empty
+		
+		this.titleHashCode = proxyInterface.getName().hashCode();
 		
 		// Check readOnly
 		readOnly = proxyInterface.getDeclaredAnnotation(ReadOnly.class) != null;

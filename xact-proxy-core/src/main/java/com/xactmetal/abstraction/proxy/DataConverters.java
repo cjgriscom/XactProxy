@@ -40,6 +40,10 @@ final class DataConverters {
 		boolean equalsFunction(Object o0, Object o1);
 	}
 	
+	static interface HashCodeFunction {
+		int hashCodeFunction(Object o);
+	}
+	
 	static interface UnwrapFlatMap {
 		<MapContext, ArrContext> Object unwrapFlatMap(
 				DeconversionHandler<MapContext, ArrContext> converter, MapContext src, String name, ProxyDatatype type);

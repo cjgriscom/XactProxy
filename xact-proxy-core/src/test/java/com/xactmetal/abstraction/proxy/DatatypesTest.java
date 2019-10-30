@@ -1,6 +1,8 @@
 package com.xactmetal.abstraction.proxy;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.function.Consumer;
@@ -54,6 +56,8 @@ public class DatatypesTest {
 		
 		// Check arrays are equal
 		assertTrue(datatypePI0.equals(datatypePI1));
+		// Check hashcodes are equal
+		assertEquals(datatypePI0.hashCode(), datatypePI1.hashCode());
 		
 		// Test default values
 		assertTrue(datatypePI0.booleanData() == false);
@@ -102,23 +106,25 @@ public class DatatypesTest {
 		
 		// Check arrays are equal
 		assertTrue(datatypePI0.equals(datatypePI1));
+		// Check hashcodes are equal
+		assertEquals(datatypePI0.hashCode(), datatypePI1.hashCode());
 
 		// Change a value at a time, check inequality
-		fillDatatypePI.accept(datatypePI1); datatypePI1.setBooleanData(false);   assertTrue(!datatypePI0.equals(datatypePI1));
-		fillDatatypePI.accept(datatypePI1); datatypePI1.setWBooleanData(null);   assertTrue(!datatypePI0.equals(datatypePI1));
-		fillDatatypePI.accept(datatypePI1); datatypePI1.setByteData((byte)-1);   assertTrue(!datatypePI0.equals(datatypePI1));
-		fillDatatypePI.accept(datatypePI1); datatypePI1.setWByteData(null);      assertTrue(!datatypePI0.equals(datatypePI1));
-		fillDatatypePI.accept(datatypePI1); datatypePI1.setShortData((short)-1); assertTrue(!datatypePI0.equals(datatypePI1));
-		fillDatatypePI.accept(datatypePI1); datatypePI1.setWShortData(null);     assertTrue(!datatypePI0.equals(datatypePI1));
-		fillDatatypePI.accept(datatypePI1); datatypePI1.setIntData(-1);          assertTrue(!datatypePI0.equals(datatypePI1));
-		fillDatatypePI.accept(datatypePI1); datatypePI1.setWIntegerData(null);   assertTrue(!datatypePI0.equals(datatypePI1));
-		fillDatatypePI.accept(datatypePI1); datatypePI1.setLongData(-1L);        assertTrue(!datatypePI0.equals(datatypePI1));
-		fillDatatypePI.accept(datatypePI1); datatypePI1.setWLongData(null);      assertTrue(!datatypePI0.equals(datatypePI1));
-		fillDatatypePI.accept(datatypePI1); datatypePI1.setFloatData(-1f);       assertTrue(!datatypePI0.equals(datatypePI1));
-		fillDatatypePI.accept(datatypePI1); datatypePI1.setWFloatData(null);     assertTrue(!datatypePI0.equals(datatypePI1));
-		fillDatatypePI.accept(datatypePI1); datatypePI1.setDoubleData(-1.);      assertTrue(!datatypePI0.equals(datatypePI1));
-		fillDatatypePI.accept(datatypePI1); datatypePI1.setWDoubleData(null);    assertTrue(!datatypePI0.equals(datatypePI1));
-		fillDatatypePI.accept(datatypePI1); datatypePI1.setStringData(null);     assertTrue(!datatypePI0.equals(datatypePI1));
+		fillDatatypePI.accept(datatypePI1); datatypePI1.setBooleanData(false);   assertFalse(datatypePI0.equals(datatypePI1)); assertNotEquals(datatypePI0.hashCode(), datatypePI1.hashCode());
+		fillDatatypePI.accept(datatypePI1); datatypePI1.setWBooleanData(null);   assertFalse(datatypePI0.equals(datatypePI1)); assertNotEquals(datatypePI0.hashCode(), datatypePI1.hashCode());
+		fillDatatypePI.accept(datatypePI1); datatypePI1.setByteData((byte)-1);   assertFalse(datatypePI0.equals(datatypePI1)); assertNotEquals(datatypePI0.hashCode(), datatypePI1.hashCode());
+		fillDatatypePI.accept(datatypePI1); datatypePI1.setWByteData(null);      assertFalse(datatypePI0.equals(datatypePI1)); assertNotEquals(datatypePI0.hashCode(), datatypePI1.hashCode());
+		fillDatatypePI.accept(datatypePI1); datatypePI1.setShortData((short)-1); assertFalse(datatypePI0.equals(datatypePI1)); assertNotEquals(datatypePI0.hashCode(), datatypePI1.hashCode());
+		fillDatatypePI.accept(datatypePI1); datatypePI1.setWShortData(null);     assertFalse(datatypePI0.equals(datatypePI1)); assertNotEquals(datatypePI0.hashCode(), datatypePI1.hashCode());
+		fillDatatypePI.accept(datatypePI1); datatypePI1.setIntData(-1);          assertFalse(datatypePI0.equals(datatypePI1)); assertNotEquals(datatypePI0.hashCode(), datatypePI1.hashCode());
+		fillDatatypePI.accept(datatypePI1); datatypePI1.setWIntegerData(null);   assertFalse(datatypePI0.equals(datatypePI1)); assertNotEquals(datatypePI0.hashCode(), datatypePI1.hashCode());
+		fillDatatypePI.accept(datatypePI1); datatypePI1.setLongData(-1L);        assertFalse(datatypePI0.equals(datatypePI1)); assertNotEquals(datatypePI0.hashCode(), datatypePI1.hashCode());
+		fillDatatypePI.accept(datatypePI1); datatypePI1.setWLongData(null);      assertFalse(datatypePI0.equals(datatypePI1)); assertNotEquals(datatypePI0.hashCode(), datatypePI1.hashCode());
+		fillDatatypePI.accept(datatypePI1); datatypePI1.setFloatData(-1f);       assertFalse(datatypePI0.equals(datatypePI1)); assertNotEquals(datatypePI0.hashCode(), datatypePI1.hashCode());
+		fillDatatypePI.accept(datatypePI1); datatypePI1.setWFloatData(null);     assertFalse(datatypePI0.equals(datatypePI1)); assertNotEquals(datatypePI0.hashCode(), datatypePI1.hashCode());
+		fillDatatypePI.accept(datatypePI1); datatypePI1.setDoubleData(-1.);      assertFalse(datatypePI0.equals(datatypePI1)); assertNotEquals(datatypePI0.hashCode(), datatypePI1.hashCode());
+		fillDatatypePI.accept(datatypePI1); datatypePI1.setWDoubleData(null);    assertFalse(datatypePI0.equals(datatypePI1)); assertNotEquals(datatypePI0.hashCode(), datatypePI1.hashCode());
+		fillDatatypePI.accept(datatypePI1); datatypePI1.setStringData(null);     assertFalse(datatypePI0.equals(datatypePI1)); assertNotEquals(datatypePI0.hashCode(), datatypePI1.hashCode());
 	}
 	
 	@Test
@@ -131,12 +137,16 @@ public class DatatypesTest {
 		
 		// Check arrays are equal
 		assertTrue(arrayPI0.equals(arrayPI1));
+		// Check hashcodes are equal
+		assertEquals(arrayPI0.hashCode(), arrayPI1.hashCode());
 		
 		// Change a value
 		arrayPI1.intArray()[0] = 0x1230123;
 		
 		// Check arrays are not equal
-		assertTrue(!arrayPI0.equals(arrayPI1));
+		assertFalse(arrayPI0.equals(arrayPI1));
+		// Check hashcodes are not equal
+		assertNotEquals(arrayPI0.hashCode(), arrayPI1.hashCode());
 	}
 	
 	@Test
@@ -149,30 +159,40 @@ public class DatatypesTest {
 		
 		// Check arrays are equal
 		assertTrue(arrayPI0.equals(arrayPI1));
+		// Check hashcodes are equal
+		assertEquals(arrayPI0.hashCode(), arrayPI1.hashCode());
 		
 		// Change a value
-		arrayPI1.wIntArray()[0] = 0x1230123;
+		arrayPI1.wIntArray()[3] = 0x1230123;
 		
 		// Check arrays are not equal
-		assertTrue(!arrayPI0.equals(arrayPI1));
+		assertFalse(arrayPI0.equals(arrayPI1));
+		// Check hashcodes are not equal
+		assertNotEquals(arrayPI0.hashCode(), arrayPI1.hashCode());
 		
 		// Change a value to null
-		arrayPI1.wIntArray()[0] = null;
+		arrayPI1.wIntArray()[3] = null;
 		
 		// Check arrays are not equal
-		assertTrue(!arrayPI0.equals(arrayPI1));
+		assertFalse(arrayPI0.equals(arrayPI1));
+		// Check hashcodes are not equal
+		assertNotEquals(arrayPI0.hashCode(), arrayPI1.hashCode());
 		
 		// Change both values to null
-		arrayPI0.wIntArray()[0] = null;
+		arrayPI0.wIntArray()[3] = null;
 		
 		// Check arrays are equal
 		assertTrue(arrayPI0.equals(arrayPI1));
+		// Check hashcodes are equal
+		assertEquals(arrayPI0.hashCode(), arrayPI1.hashCode());
 		
 		// Change other value to nonnull
-		arrayPI1.wIntArray()[0] = 0x1230123;
+		arrayPI1.wIntArray()[3] = 0x1230123;
 		
 		// Check arrays are not equal
-		assertTrue(!arrayPI0.equals(arrayPI1));
+		assertFalse(arrayPI0.equals(arrayPI1));
+		// Check hashcodes are not equal
+		assertNotEquals(arrayPI0.hashCode(), arrayPI1.hashCode());
 	}
 	
 	@Test
@@ -185,12 +205,16 @@ public class DatatypesTest {
 		
 		// Check arrays are equal
 		assertTrue(deepArrayPI0.equals(deepArrayPI1));
+		// Check hashcodes are equal
+		assertEquals(deepArrayPI0.hashCode(), deepArrayPI1.hashCode());
 		
 		// Change a value
 		deepArrayPI1.deepArray()[0][0] = 0x1230123;
 		
 		// Check arrays are not equal
-		assertTrue(!deepArrayPI0.equals(deepArrayPI1));
+		assertFalse(deepArrayPI0.equals(deepArrayPI1));
+		// Check hashcodes are not equal
+		assertNotEquals(deepArrayPI0.hashCode(), deepArrayPI1.hashCode());
 	}
 	
 	@Test
@@ -209,11 +233,15 @@ public class DatatypesTest {
 		
 		// Check arrays are equal
 		assertTrue(deepOfDeep0.equals(deepOfDeep1));
+		// Check hashcodes are equal
+		assertEquals(deepOfDeep0.hashCode(), deepOfDeep1.hashCode());
 		
 		// Change a value
 		array0[0][0] = 0x1230123;
 		
 		// Check arrays are not equal
 		assertTrue(!deepOfDeep0.equals(deepOfDeep1));
+		// Check hashcodes are not equal
+		assertNotEquals(deepOfDeep0.hashCode(), deepOfDeep1.hashCode());
 	}
 }

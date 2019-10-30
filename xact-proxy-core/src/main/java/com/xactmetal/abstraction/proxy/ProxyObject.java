@@ -109,7 +109,20 @@ class ProxyObject implements InvocationHandler, Serializable {
 			if (getTemplate().datatypes.containsKey(name)) {
 				return fields.get(name);
 			} else if (name.equals("hashCode")) {
-				return this.hashCode();
+				int hashCode = getTemplate().titleHashCode; // Begin with name of class
+				Iterator<Entry<String, ProxyDatatype>> dti = getTemplate().datatypes.entrySet().iterator();
+				
+				// Loop through items and add (name.hashCode() ^ obj.hashCode()) for every non-null
+				while (dti.hasNext()){
+					Entry<String, ProxyDatatype> entry = dti.next();
+					Object obj = fields.get(entry.getKey());
+					if (obj != null) {
+						int nameHashCode = entry.getKey().hashCode();
+						int objHashCode = entry.getValue().hashCodeFor(obj);
+						hashCode += nameHashCode ^ objHashCode;
+					}
+				}
+				return hashCode;
 			} else if (name.equals("toString")) {
 				StringBuilder out = new StringBuilder();
 				out.append("[");

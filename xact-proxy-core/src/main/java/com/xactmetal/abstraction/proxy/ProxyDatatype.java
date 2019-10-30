@@ -7,6 +7,7 @@ import java.util.Arrays;
 import com.xactmetal.abstraction.proxy.DataConverters.ConstructAndFill;
 import com.xactmetal.abstraction.proxy.DataConverters.EqualsFunction;
 import com.xactmetal.abstraction.proxy.DataConverters.FillAbstractArray;
+import com.xactmetal.abstraction.proxy.DataConverters.HashCodeFunction;
 import com.xactmetal.abstraction.proxy.DataConverters.UnwrapFlatMap;
 import com.xactmetal.abstraction.proxy.DataConverters.WrapFlatMap;
 
@@ -18,27 +19,29 @@ final class ProxyDatatype {
 	public final boolean primitive;
 	
 	public static enum Base {
-		Boolean(boolean.class,Boolean.class,boolean[].class,Boolean[].class,(a,b)->Arrays.equals((boolean[])a,(boolean[])b),DataConverters::unwrapFlatMapBoolean,DataConverters::constructAndFillBoolean,DataConverters::wrapFlatMapBoolean,DataConverters::fillAbstractArrayBoolean),
-		Byte   (byte.class,   Byte.class,   byte[].class,   Byte[].class,   (a,b)->Arrays.equals(   (byte[])a,   (byte[])b),DataConverters::unwrapFlatMapByte   ,DataConverters::constructAndFillByte   ,DataConverters::wrapFlatMapByte   ,DataConverters::fillAbstractArrayByte   ),
-		Short  (short.class,  Short.class,  short[].class,  Short[].class,  (a,b)->Arrays.equals(  (short[])a,  (short[])b),DataConverters::unwrapFlatMapShort  ,DataConverters::constructAndFillShort  ,DataConverters::wrapFlatMapShort  ,DataConverters::fillAbstractArrayShort  ),
-		Integer(int.class,    Integer.class,int[].class,    Integer[].class,(a,b)->Arrays.equals(    (int[])a,    (int[])b),DataConverters::unwrapFlatMapInteger,DataConverters::constructAndFillInteger,DataConverters::wrapFlatMapInteger,DataConverters::fillAbstractArrayInteger),
-		Long   (long.class,   Long.class,   long[].class,   Long[].class,   (a,b)->Arrays.equals(   (long[])a,   (long[])b),DataConverters::unwrapFlatMapLong   ,DataConverters::constructAndFillLong   ,DataConverters::wrapFlatMapLong   ,DataConverters::fillAbstractArrayLong   ),
-		Float  (float.class,  Float.class,  float[].class,  Float[].class,  (a,b)->Arrays.equals(  (float[])a,  (float[])b),DataConverters::unwrapFlatMapFloat  ,DataConverters::constructAndFillFloat  ,DataConverters::wrapFlatMapFloat  ,DataConverters::fillAbstractArrayFloat  ),
-		Double (double.class, Double.class, double[].class, Double[].class, (a,b)->Arrays.equals( (double[])a, (double[])b),DataConverters::unwrapFlatMapDouble ,DataConverters::constructAndFillDouble ,DataConverters::wrapFlatMapDouble ,DataConverters::fillAbstractArrayDouble ),
-		String (null,         String.class, null,           String[].class, (a,b)->false                                   ,DataConverters::unwrapFlatMapString ,DataConverters::constructAndFillString ,DataConverters::wrapFlatMapString ,DataConverters::fillAbstractArrayString ),
-		ProxyInterface(null,  null,         null,           null,           (a,b)->false                                   , ProxyDatatype::unwrapFlatMapProxy  , ProxyDatatype::constructAndFillProxy  , ProxyDatatype::wrapFlatMapProxy  , ProxyDatatype::fillAbstractArrayProxy  );
+		Boolean(boolean.class,Boolean.class,boolean[].class,Boolean[].class,(a,b)->Arrays.equals((boolean[])a,(boolean[])b),(a)->Arrays.hashCode((boolean[])a),DataConverters::unwrapFlatMapBoolean,DataConverters::constructAndFillBoolean,DataConverters::wrapFlatMapBoolean,DataConverters::fillAbstractArrayBoolean),
+		Byte   (byte.class,   Byte.class,   byte[].class,   Byte[].class,   (a,b)->Arrays.equals(   (byte[])a,   (byte[])b),(a)->Arrays.hashCode(   (byte[])a),DataConverters::unwrapFlatMapByte   ,DataConverters::constructAndFillByte   ,DataConverters::wrapFlatMapByte   ,DataConverters::fillAbstractArrayByte   ),
+		Short  (short.class,  Short.class,  short[].class,  Short[].class,  (a,b)->Arrays.equals(  (short[])a,  (short[])b),(a)->Arrays.hashCode(  (short[])a),DataConverters::unwrapFlatMapShort  ,DataConverters::constructAndFillShort  ,DataConverters::wrapFlatMapShort  ,DataConverters::fillAbstractArrayShort  ),
+		Integer(int.class,    Integer.class,int[].class,    Integer[].class,(a,b)->Arrays.equals(    (int[])a,    (int[])b),(a)->Arrays.hashCode(    (int[])a),DataConverters::unwrapFlatMapInteger,DataConverters::constructAndFillInteger,DataConverters::wrapFlatMapInteger,DataConverters::fillAbstractArrayInteger),
+		Long   (long.class,   Long.class,   long[].class,   Long[].class,   (a,b)->Arrays.equals(   (long[])a,   (long[])b),(a)->Arrays.hashCode(   (long[])a),DataConverters::unwrapFlatMapLong   ,DataConverters::constructAndFillLong   ,DataConverters::wrapFlatMapLong   ,DataConverters::fillAbstractArrayLong   ),
+		Float  (float.class,  Float.class,  float[].class,  Float[].class,  (a,b)->Arrays.equals(  (float[])a,  (float[])b),(a)->Arrays.hashCode(  (float[])a),DataConverters::unwrapFlatMapFloat  ,DataConverters::constructAndFillFloat  ,DataConverters::wrapFlatMapFloat  ,DataConverters::fillAbstractArrayFloat  ),
+		Double (double.class, Double.class, double[].class, Double[].class, (a,b)->Arrays.equals( (double[])a, (double[])b),(a)->Arrays.hashCode( (double[])a),DataConverters::unwrapFlatMapDouble ,DataConverters::constructAndFillDouble ,DataConverters::wrapFlatMapDouble ,DataConverters::fillAbstractArrayDouble ),
+		String (null,         String.class, null,           String[].class, (a,b)->false                                   ,(a)->0                            ,DataConverters::unwrapFlatMapString ,DataConverters::constructAndFillString ,DataConverters::wrapFlatMapString ,DataConverters::fillAbstractArrayString ),
+		ProxyInterface(null,  null,         null,           null,           (a,b)->false                                   ,(a)->0                            , ProxyDatatype::unwrapFlatMapProxy  , ProxyDatatype::constructAndFillProxy  , ProxyDatatype::wrapFlatMapProxy  , ProxyDatatype::fillAbstractArrayProxy  );
 		
 		final Class<?> primitiveClass, objectClass, primitive1DClass, object1DClass;
 		final EqualsFunction arrayEqualsFunction;
+		final HashCodeFunction arrayHashCodeFunction;
 		final UnwrapFlatMap unwrapFlatMap;
 		final ConstructAndFill constructAndFill;
 		final WrapFlatMap wrapFlatMap;
 		final FillAbstractArray fillAbstractArray;
 		
 		Base(
-				Class<?> primitiveClass, Class<?> objectClass, 
-				Class<?> primitive1DClass, Class<?> object1DClass, 
+				Class<?> primitiveClass, Class<?> objectClass,
+				Class<?> primitive1DClass, Class<?> object1DClass,
 				EqualsFunction arrayEqualsFunction,
+				HashCodeFunction arrayHashCodeFunction,
 				UnwrapFlatMap unwrapFlatMap, ConstructAndFill constructAndFill,
 				WrapFlatMap wrapFlatMap, FillAbstractArray fillAbstractArray) {
 			
@@ -47,6 +50,7 @@ final class ProxyDatatype {
 			this.primitive1DClass = primitive1DClass;
 			this.object1DClass = object1DClass;
 			this.arrayEqualsFunction = arrayEqualsFunction;
+			this.arrayHashCodeFunction = arrayHashCodeFunction;
 			this.unwrapFlatMap = unwrapFlatMap;
 			this.constructAndFill = constructAndFill;
 			this.wrapFlatMap = wrapFlatMap;
@@ -123,6 +127,13 @@ final class ProxyDatatype {
 		} else {
 			return false;
 		}
+	}
+	
+	// Get the deep hashcode of the object of this type (nonnull) 
+	public int hashCodeFor(Object thisObj) {
+		if (dimensions == 0) return thisObj.hashCode();
+		else if (dimensions == 1 && primitive) return this.base.arrayHashCodeFunction.hashCodeFunction(thisObj);
+		return Arrays.deepHashCode((Object[]) thisObj);
 	}
 	
 	// Check if one object of this type equals another of the same type (nonnull) 
