@@ -1,5 +1,7 @@
 package com.xactmetal.abstraction.proxy;
 
+import java.util.Comparator;
+
 public interface ProxyInterface {
 	
 	public static <T extends ProxyInterface> T newInstance(Class<T> proxyInterface) throws IllegalArgumentException {
@@ -21,6 +23,15 @@ public interface ProxyInterface {
 	@SuppressWarnings("unchecked")
 	public static <T extends ProxyInterface> Class<T> classOf(T proxyInterface) {
 		return (Class<T>) proxyInterface.getClass().getInterfaces()[0];
+	}
+	
+	/**
+	 * Returns a comparator that will sort a list of field names according to their @Order declarations
+	 * @param proxyInterface
+	 * @return
+	 */
+	public static <T extends ProxyInterface> Comparator<String> getKeyOrderComparator(Class<T> proxyInterface) {
+		return ProxyObject.getKeyOrderComparator(proxyInterface);
 	}
 	
 }

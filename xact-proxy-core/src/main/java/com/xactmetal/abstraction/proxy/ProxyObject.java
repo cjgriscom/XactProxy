@@ -8,6 +8,8 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.TreeMap;
@@ -25,6 +27,25 @@ class ProxyObject implements InvocationHandler, Serializable {
 				proxyInterface.getClassLoader(), 
 				new Class<?>[] {proxyInterface},
 				new ProxyObject(proxyInterface, template));
+	}
+	
+	public static <T extends ProxyInterface> Comparator<String> getKeyOrderComparator(Class<T> proxyInterface) {
+		ProxyTemplate template = ProxyInterfaceCache.validateProxyInterface_Lock(proxyInterface);
+		return new Comparator<String>() {
+			HashMap<String, Integer> order = new HashMap<>(); {
+				Collection<String> src;
+				if (template.ordered) src = template.orderedDatatypeKeys;
+				else src = template.datatypes.keySet();
+				int i = 0;
+				for (String key : src) order.put(key, i++);
+			}
+			
+			@Override
+			public int compare(String o1, String o2) {
+				return Integer.compare(order.get(o1), order.get(o2));
+			}
+		};
+		
 	}
 
 	private transient ProxyTemplate template = null;
