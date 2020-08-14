@@ -99,7 +99,7 @@ final class ProxyTemplate {
 				continue;
 			} else if (meth.isDefault()) {
 				Class<?>[] types = new Class<?>[meth.getParameterTypes().length + 1];
-				types[types.length - 1] = proxyInterface;
+				types[0] = proxyInterface;
 				System.arraycopy(meth.getParameterTypes(), 0, types, 1, meth.getParameterTypes().length);
 				// Check if GenerateDefaultHandles was invoked
 				Method staticHandle = findStaticMethod(proxyInterface, "_default_" + meth.getName(), types);
